@@ -1,9 +1,8 @@
 import asyncio
-from utils import LOGGERS
+
 import config 
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
-OWNERS = "7009601543"
 from KOKUMUSIC import app
 from KOKUMUSIC.utils.database import add_served_chat, get_assistant
 
