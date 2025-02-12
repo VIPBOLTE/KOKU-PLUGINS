@@ -1,5 +1,5 @@
 from pyrogram import filters
-from TheApi import api
+from KOKUAPI import api
 
 from config import LOG_GROUP_ID
 from KOKUMUSIC import app
