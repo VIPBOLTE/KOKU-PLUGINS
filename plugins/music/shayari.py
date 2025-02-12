@@ -1,7 +1,7 @@
 import random
 from KOKUMUSIC.utils.database import get_served_chats
 from pyrogram import Client, filters
-
+import config
 from KOKUMUSIC import app
 
 # Define a dictionary to track the last message timestamp for each user
@@ -67,10 +67,10 @@ async def help(client: Client, message: Message):
             [
                 [
                     InlineKeyboardButton(
-                        "✨𝚂𝚄𝙿𝙿𝙾𝚁𝚃✨", url=f"https://t.me/PBX_CHAT"
+                        "✨𝚂𝚄𝙿𝙿𝙾𝚁𝚃✨", url=f"https://t.me/{config.SUPPORT_CHAT}"
                     ),
                     InlineKeyboardButton(
-                        "✨𝙾𝙵𝙵𝙸𝙲𝙴✨", url=f"https://t.me/HEROKUBIN_01"
+                        "✨𝙾𝙵𝙵𝙸𝙲𝙴✨", url=f"https://t.me/{config.SUPPORT_CHANNEL}"
                     ),
                 ]
             ]
@@ -86,10 +86,10 @@ async def help(client: Client, message: Message):
             [
                 [
                     InlineKeyboardButton(
-                        "✨𝚂𝚄𝙿𝙿𝙾𝚁𝚃✨", url=f"https://t.me/PBX_CHAT"
+                        "✨𝚂𝚄𝙿𝙿𝙾𝚁𝚃✨", url=f"https://t.me/{config.SUPPORT_CHAT}"
                     ),
                     InlineKeyboardButton(
-                        "✨𝙾𝙵𝙵𝙸𝙲𝙴✨", url=f"https://t.me/HEROKUBIN_01"
+                        "✨𝙾𝙵𝙵𝙸𝙲𝙴✨", url=f"https://t.me/{config.SUPPORT_CHANNEL}"
                     ),
                 ]
             ]
