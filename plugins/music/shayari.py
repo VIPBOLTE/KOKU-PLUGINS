@@ -1,5 +1,5 @@
 import random
-from BADMUSIC.utils.database import get_served_chats
+from KOKUMUSIC.utils.database import get_served_chats
 from pyrogram import Client, filters
 
 from KOKUMUSIC import app
