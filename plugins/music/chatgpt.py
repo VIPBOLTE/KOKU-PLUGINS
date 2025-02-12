@@ -2,7 +2,7 @@ from pyrogram import filters
 from pyrogram.enums import ChatAction
 
 from KOKUAPI import api
-
+import config
 from KOKUMUSIC import app
 from config import BANNED_USERS
 
@@ -23,7 +23,7 @@ async def chat_gpt(bot, message):
         else:
             a = message.text.split(' ', 1)[1]
             r=api.gemini(a)["results"]
-            await message.reply_text(f" {r} \n\n🌸 ᴘᴏᴡᴇʀᴇᴅ @app.me", parse_mode=ParseMode.MARKDOWN)     
+            await message.reply_text(f" {r} \n\n🌸 ᴘᴏᴡᴇʀᴇᴅ @{config.BOT_USERNAME}", parse_mode=ParseMode.MARKDOWN)     
     except Exception as e:
         await message.reply_text(f"**ᴇʀʀᴏʀ: {e} ")
 
