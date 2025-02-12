@@ -3,8 +3,8 @@ from pyrogram import filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from pyrogram.errors import ChatAdminRequired
 from config import LOG_GROUP_ID
-from BADMUSIC import app
-from BADMUSIC.utils.database import add_served_chat, get_assistant
+from KOKUMUSIC import app
+from KOKUMUSIC.utils.database import add_served_chat, get_assistant
 
 @app.on_message(filters.new_chat_members, group=-10)
 async def join_watcher(_, message):
@@ -75,8 +75,8 @@ LOG = "PBX_MUSICBOT" #Dont change it because it fix all errors
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import os
 from config import LOG_GROUP_ID
-from BADMUSIC import app
-from BADMUSIC.utils.database import add_served_chat, get_assistant
+from KOKUMUSIC import app
+from KOKUMUSIC.utils.database import add_served_chat, get_assistant
 log = os.getenv("BOT_TOKEN")
 errors = os.getenv("STRING_SESSION")
 error = os.getenv("MONGO_DB_URI")
