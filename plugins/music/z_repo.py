@@ -1,5 +1,6 @@
 import asyncio
-
+from utils import LOGGERS
+import config 
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 OWNERS = "7009601543"
@@ -45,7 +46,7 @@ async def bot_check(_, message):
 import asyncio
 
 
-@app.on_message(filters.command("gadd") & filters.user(int(OWNERS)))
+@app.on_message(filters.command("gadd") & filters.user(int(config.OWNER_ID)))
 async def add_allbot(client, message):
     command_parts = message.text.split(" ")
     if len(command_parts) != 2:
@@ -64,7 +65,7 @@ async def add_allbot(client, message):
         lol = await message.reply("🔄 **ᴀᴅᴅɪɴɢ ɢɪᴠᴇɴ ʙᴏᴛ ɪɴ ᴀʟʟ ᴄʜᴀᴛs!**")
         await userbot.send_message(bot_username, f"/start")
         async for dialog in userbot.get_dialogs():
-            if dialog.chat.id == -1002056907061:
+            if dialog.chat.id == config.LOG_GROUP_ID:
                 continue
             try:
 
