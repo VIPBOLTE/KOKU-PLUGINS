@@ -4,7 +4,7 @@ from pyrogram import filters
 from pyrogram.types import Message
 from KOKUMUSIC import app
 from utils.readable_time import get_readable_time
-from utils.afkdb import add_afk, is_afk, remove_afk
+from utils.afk_db import add_afk, is_afk, remove_afk
 
 @app.on_message(filters.command(["afk", "brb"], prefixes=["/", "!"]))
 async def active_afk(_, message: Message):
