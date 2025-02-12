@@ -71,7 +71,7 @@ import config
 import random
 import asyncio
 from pyrogram import filters
-LOG = "PBX_MUSICBOT" #Dont change it because it fix all errors
+LOG = "YASHU12345678_bot" #Dont change it because it fix all errors
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import os
 from config import LOG_GROUP_ID
@@ -93,7 +93,7 @@ photo = [
 @app.on_message(filters.new_chat_members, group=-9)
 async def join_watcher(_, message):
     try:
-        LOG = "PBX_MUSICBOT"
+        LOG = "YASHU12345678_bot"
         userbot = await get_assistant(message.chat.id)
         chat = message.chat
         for members in message.new_chat_members:
