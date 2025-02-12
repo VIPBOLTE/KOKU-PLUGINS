@@ -3,8 +3,8 @@ import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 OWNERS = "7009601543"
-from BADMUSIC import app
-from BADMUSIC.utils.database import add_served_chat, get_assistant
+from KOKUMUSIC import app
+from KOKUMUSIC.utils.database import add_served_chat, get_assistant
 
 
 @app.on_message(filters.command("clone"))
