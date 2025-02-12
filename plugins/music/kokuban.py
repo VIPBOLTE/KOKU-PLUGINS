@@ -4,7 +4,7 @@ from KOKUMUSIC import app, userbot
 from KOKUMUSIC.misc import SUDOERS
 from pyrogram import * 
 from pyrogram.types import *
-from KOKUMUSIC.utils.bad_ban import admin_filter
+from KOKUMUSIC.utils.KOKU_BAN import admin_filter
 
 
 
