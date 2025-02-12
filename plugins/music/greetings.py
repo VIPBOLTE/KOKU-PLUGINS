@@ -273,7 +273,7 @@ async def member_has_joined(c: app, member: ChatMemberUpdated):
         if user.id in DEV_USERS:
             await c.send_animation(
                 chat_id=member.chat.id,
-                animation="./BADMUSIC/welcome/william (1).gif",
+                animation="./KOKUMUSIC/welcome/william (1).gif",
                 caption="ᴍʏ ᴏᴡɴᴇʀ ɪs ʜᴇʀᴇ 🌸🙈❤️",
             )
             return
