@@ -1,7 +1,7 @@
 from pyrogram import filters
 from pyrogram.enums import ChatAction
-from TheApi import api
-from BadAPI import api
+
+from KOKUAPI import api
 
 from KOKUMUSIC import app
 from config import BANNED_USERS
