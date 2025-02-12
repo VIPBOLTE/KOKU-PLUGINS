@@ -7,7 +7,7 @@ from pyrogram.enums import ChatMemberStatus as CMS
 from pyrogram.errors import ChatAdminRequired, RPCError
 from pyrogram.types import ChatMemberUpdated, Message
 
-from BADMUSIC.logging import LOGGERR
+from KOKUMUSIC.logging import LOGGERR
 from KOKUMUSIC import app
 from KOKUMUSIC.utils.decorators import AdminRightsCheck
 from KOKUMUSIC.utils.permissions import adminsOnly
