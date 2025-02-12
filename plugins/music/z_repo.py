@@ -1,5 +1,5 @@
 import asyncio
-from utils import LOGGERS
+from utils.afk_db import LOGGERS
 import config 
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
