@@ -5,7 +5,7 @@ from KOKUMUSIC import app
 import config
 
 #--------------------------
-MUST_JOIN = {config.SUPPORT_CHAT}
+MUST_JOIN = config.SUPPORT_CHAT
 #------------------------
 @app.on_message(filters.incoming & filters.private, group=-1)
 async def must_join_channel(app: Client, msg: Message):
