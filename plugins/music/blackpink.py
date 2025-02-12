@@ -1,5 +1,5 @@
 from pyrogram import filters
-from TheApi import api
+from KOKUAPI import api
 
 from KOKOMUSIC import app
 from config import BANNED_USERS
