@@ -10,4 +10,4 @@ SafoneAPI
 nekos.py
 telegraph
 uuid
-git+https://github.com/badmunda98/BadAPI
+git+https://github.com/VIPBOLTE/KOKU_API
