@@ -1,6 +1,6 @@
 from pyrogram import filters
 from KOKUMUSIC import app
-from TheApi import api
+from KOKUAPI import api
 
 
 @app.on_message(filters.command("hastag"))
