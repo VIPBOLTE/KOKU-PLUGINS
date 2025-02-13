@@ -62,7 +62,7 @@ async def isPreviewUp(preview: str) -> bool:
 # Function to ensure the async function is running in the correct context
 def ensure_event_loop():
     try:
-        loop = asyncio.get_running_loop()  # Will raise an error if there's no running loop
+        loop = asyncio.get_event_loop()  # Will raise an error if there's no running loop
     except RuntimeError:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
