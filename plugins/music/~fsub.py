@@ -19,8 +19,15 @@ forcesub_collection = fsubdb.status_db.status
 @app.on_message(filters.command(["fsub", "forcesub"]) & filters.group)
 async def set_forcesub(client: Client, message: Message):
     chat_id = message.chat.id
-    user_id = message.from_user.id
 
+    # Ensure message.from_user exists before accessing
+    user_id = message.from_user.id if message.from_user else None
+
+    # If no user information is available, return early
+    if user_id is None:
+        return
+
+    # Check if the user is an admin or sudoer
     member = await client.get_chat_member(chat_id, user_id)
     if not (member.status == "creator" or user_id in SUDOERS):
         return await message.reply_text("**ᴏɴʟʏ ɢʀᴏᴜᴘ ᴏᴡɴᴇʀs ᴏʀ sᴜᴅᴏᴇʀs ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ.**")
@@ -30,7 +37,7 @@ async def set_forcesub(client: Client, message: Message):
         return await message.reply_text("**ғᴏʀᴄᴇ sᴜʙsᴄʀɪᴘᴛɪᴏɴ ʜᴀs ʙᴇᴇɴ ᴅɪsᴀʙʟᴇᴅ ғᴏʀ ᴛʜɪs ɢʀᴏᴜᴘ.**")
 
     if len(message.command) != 2:
-        return await message.reply_text("**ᴜsᴀɢᴇ: /ғsᴜʙ <ᴄʜᴀɴɴᴇʟ ᴜsᴇʀɴᴀᴍᴇ ᴏʀ ɪᴅ> ᴏʀ /ғsᴜʙ ᴏғғ ᴛᴏ ᴅɪsᴀʙʟᴇ**")
+        return await message.reply_text("**ᴜsᴀɢᴇ: /ғsᴜʙ <ᴄʜᴀɴɴᴇʟ ᴜsᴇʀɴᴀᴍᴇ ᴏʀ ɪᴅ> ᴏʀ /ғsᴜʙ ᴏғф ᴛᴏ ᴅɪsᴀʙʟᴇ**")
 
     channel_input = message.command[1]
 
@@ -62,7 +69,6 @@ async def set_forcesub(client: Client, message: Message):
                     [[InlineKeyboardButton("๏ ᴀᴅᴅ ᴍᴇ ɪɴ ᴄʜᴀɴɴᴇʟ ๏", url=f"https://t.me/{app.username}?startchannel=s&admin=invite_users+manage_video_chats")]]
                 )
             )
-            
 
         forcesub_collection.update_one(
             {"chat_id": chat_id},
@@ -104,11 +110,16 @@ async def set_forcesub(client: Client, message: Message):
 async def close_force_sub(client: Client, callback_query: CallbackQuery):
     await callback_query.answer("ᴄʟᴏsᴇᴅ!")
     await callback_query.message.delete()
-    
 
 async def check_forcesub(client: Client, message: Message):
     chat_id = message.chat.id
-    user_id = message.from_user.id
+
+    # Ensure message.from_user exists before accessing
+    user_id = message.from_user.id if message.from_user else None
+
+    # If no user information is available, exit the function
+    if user_id is None:
+        return
 
     forcesub_data = forcesub_collection.find_one({"chat_id": chat_id})
     if not forcesub_data:
