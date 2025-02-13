@@ -1,7 +1,7 @@
 from pyrogram import enums, filters
 from KOKUMUSIC import app
 
-BOT_ID = app.id
+BOT_ID = app.me.id
 
 @app.on_message(filters.command(["unbanall", "nbanall", "ba"], prefixes=["/", "!", ".", "U", "u"]))
 async def unban_all(_, msg):
