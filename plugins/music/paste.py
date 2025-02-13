@@ -10,7 +10,8 @@ from aiohttp import ClientSession
 import aiofiles
 from io import BytesIO
 from KOKUMUSIC import app
-# Create a ClientSession for aiohttp
+
+# Create a single ClientSession for aiohttp
 aiohttpsession = ClientSession()
 
 # Pattern for checking supported MIME types (text files)
@@ -19,29 +20,25 @@ pattern = re.compile(r"^text/|json$|yaml$|xml$|toml$|x-sh$|x-shellscript$")
 # Function to generate the Carbon image from the code
 async def make_carbon(code):
     url = "https://carbonara.solopov.dev/api/cook"
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, json={"code": code}) as resp:
-            image = BytesIO(await resp.read())
+    async with aiohttpsession.post(url, json={"code": code}) as resp:
+        image = BytesIO(await resp.read())
     image.name = "carbon.png"
     return image
 
 # Function to send content via netcat to the server
-def _netcat(host, port, content):
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((host, port))
-    s.sendall(content.encode())
-    s.shutdown(socket.SHUT_WR)
-    while True:
-        data = s.recv(4096).decode("utf-8").strip("\n\x00")
-        if not data:
-            break
-        return data
-    s.close()
+# Refactor netcat function to async using asyncio
+async def _netcat(host, port, content):
+    reader, writer = await asyncio.open_connection(host, port)
+    writer.write(content.encode())
+    await writer.drain()
+    data = await reader.read(4096)
+    writer.close()
+    await writer.wait_closed()
+    return data.decode("utf-8").strip("\n\x00")
 
 # Async function to paste content and retrieve the link
 async def paste(content):
-    loop = get_running_loop()
-    link = await loop.run_in_executor(None, partial(_netcat, "ezup.dev", 9999, content))
+    link = await _netcat("ezup.dev", 9999, content)
     return link
 
 # Function to check if the preview URL is up and running
@@ -117,7 +114,3 @@ async def paste_func(_, message):
 
     else:
         await m.edit("**Unsupported file type. Only text files can be pasted.**")
-
-# Run the bot
-if __name__ == "__main__":
-    app.run()
