@@ -9,7 +9,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiohttp import ClientSession
 import aiofiles
 from io import BytesIO
-from KOKUMUSIC Import app
+from KOKUMUSIC import app
 # Create a ClientSession for aiohttp
 aiohttpsession = ClientSession()
 
