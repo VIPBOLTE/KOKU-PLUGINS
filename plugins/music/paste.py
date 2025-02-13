@@ -1,17 +1,22 @@
-from asyncio import get_running_loop, sleep, TimeoutError
-from functools import partial
-from KOKUMUSIC import app
-from pyrogram import filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from aiohttp import ClientSession
+import asyncio
 import re
 import os
 import socket
+from asyncio import get_running_loop, sleep
+from functools import partial
+from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiohttp import ClientSession
 import aiofiles
-import aiohttp
-import asyncio
 from io import BytesIO
+from KOKUMUSIC Import app
+# Create a ClientSession for aiohttp
+aiohttpsession = ClientSession()
 
+# Pattern for checking supported MIME types (text files)
+pattern = re.compile(r"^text/|json$|yaml$|xml$|toml$|x-sh$|x-shellscript$")
+
+# Function to generate the Carbon image from the code
 async def make_carbon(code):
     url = "https://carbonara.solopov.dev/api/cook"
     async with aiohttp.ClientSession() as session:
@@ -19,11 +24,8 @@ async def make_carbon(code):
             image = BytesIO(await resp.read())
     image.name = "carbon.png"
     return image
-    
-aiohttpsession = ClientSession()
 
-pattern = re.compile(r"^text/|json$|yaml$|xml$|toml$|x-sh$|x-shellscript$")
-
+# Function to send content via netcat to the server
 def _netcat(host, port, content):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((host, port))
@@ -36,11 +38,13 @@ def _netcat(host, port, content):
         return data
     s.close()
 
+# Async function to paste content and retrieve the link
 async def paste(content):
     loop = get_running_loop()
     link = await loop.run_in_executor(None, partial(_netcat, "ezup.dev", 9999, content))
     return link
 
+# Function to check if the preview URL is up and running
 async def isPreviewUp(preview: str) -> bool:
     for _ in range(7):
         try:
@@ -55,6 +59,16 @@ async def isPreviewUp(preview: str) -> bool:
             return status == 200
     return False
 
+# Function to ensure the async function is running in the correct context
+def ensure_event_loop():
+    try:
+        loop = asyncio.get_running_loop()  # Will raise an error if there's no running loop
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    return loop
+
+# Handle the /error command when the user replies to a message
 @app.on_message(filters.command("error"))
 async def paste_func(_, message):
     if not message.reply_to_message:
@@ -103,4 +117,7 @@ async def paste_func(_, message):
 
     else:
         await m.edit("**Unsupported file type. Only text files can be pasted.**")
-      
+
+# Run the bot
+if __name__ == "__main__":
+    app.run()
