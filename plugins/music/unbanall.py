@@ -1,12 +1,6 @@
-import logging
 from pyrogram import enums, filters
 from KOKUMUSIC import app
-
-# Set up logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
-
-BOT_ID = app.me.id
+from config import BOT_ID
 
 @app.on_message(filters.command(["unbanall", "nbanall", "ba"], prefixes=["/", "!", ".", "U", "u"]))
 async def unban_all(_, msg):
@@ -14,63 +8,39 @@ async def unban_all(_, msg):
     user_id = msg.from_user.id
     x = 0
 
-    # Get bot's permissions in the chat
-    try:
-        bot = await app.get_chat_member(chat_id, BOT_ID)
-        if bot is None:
-            await msg.reply_text("I could not fetch bot information.")
-            return
-    except Exception as e:
-        logger.error(f"Error fetching bot info: {e}")
-        await msg.reply_text("There was an error fetching bot information.")
-        return
+    bot = await app.get_chat_member(chat_id, BOT_ID)
+    bot_permission = bot.privileges.can_restrict_members == True
 
-    # Check if bot has permissions to restrict members
-    bot_permission = bot.privileges and bot.privileges.can_restrict_members if bot.privileges else False
+    user = await app.get_chat_member(chat_id, user_id)
+    user_permission = user.privileges and user.privileges.can_restrict_members
 
-    # Get user information and their permissions
-    try:
-        user = await app.get_chat_member(chat_id, user_id)
-        if user is None:
-            await msg.reply_text("I could not fetch your information.")
-            return
-    except Exception as e:
-        logger.error(f"Error fetching user info: {e}")
-        await msg.reply_text("There was an error fetching your information.")
-        return
-
-    # Check if user has permissions to restrict members
-    user_permission = user.privileges and user.privileges.can_restrict_members if user.privileges else False
-
-    # Only proceed if both bot and user have the necessary permissions
     if bot_permission and user_permission:
-        try:
-            banned_users = []
-            # Fetch all banned users in the chat
-            async for m in app.get_chat_members(chat_id, filter=enums.ChatMembersFilter.BANNED):
-                banned_users.append(m.user.id)
+        banned_users = []
+        async for m in app.get_chat_members(
+            chat_id, filter=enums.ChatMembersFilter.BANNED
+        ):
+            banned_users.append(m.user.id)
 
-            ok = await app.send_message(
-                chat_id,
-                f"Total **{len(banned_users)}** users found to unban.\n**Started unbanning..**",
-            )
+        ok = await app.send_message(
+            chat_id,
+            f"Total **{len(banned_users)}** users found to unban.\n**Started unbanning..**",
+        )
 
-            # Unban users in batches
-            for user_id in banned_users:
-                try:
-                    await app.unban_chat_member(chat_id, user_id)
-                    x += 1
+        for user_id in banned_users:
+            try:
+                await app.unban_chat_member(chat_id, user_id)
+                x += 1
 
-                    if x % 5 == 0:
-                        await ok.edit_text(f"Unbanned {x} out of {len(banned_users)} users.")
-                except Exception as e:
-                    logger.error(f"Error unbanning user {user_id}: {e}")
-                    pass
+                if x % 5 == 0:
+                    await ok.edit_text(
+                        f"Unbanned {x} out of {len(banned_users)} users."
+                    )
 
-            await ok.edit_text(f"Unbanned all {len(banned_users)} users.")
-        except Exception as e:
-            logger.error(f"Error processing banned users: {e}")
-            await msg.reply_text("There was an error while unbanning users.")
+            except Exception:
+                pass
+
+        await ok.edit_text(f"Unbanned all {len(banned_users)} users.")
+
     else:
         await msg.reply_text(
             "ᴇɪᴛʜᴇʀ ɪ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴛʜᴇ ʀɪɢʜᴛ ᴛᴏ ʀᴇsᴛʀɪᴄᴛ ᴜsᴇʀs ᴏʀ ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ɪɴ sᴜᴅᴏ ᴜsᴇʀs ᴏʀ ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀ ɴᴇᴄᴇssᴀʀʏ ᴀᴅᴍɪɴ"
