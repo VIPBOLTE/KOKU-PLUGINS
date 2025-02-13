@@ -21,7 +21,7 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from KOKUMUSIC import app
 from utils.error import capture_err
 
-BOT_USERNAME = app.me.username
+import config BOT_USERNAME
 
 MAX_STICKERS = (
     120  # would be better if we could fetch this limit directly from telegram
