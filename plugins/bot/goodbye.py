@@ -9,10 +9,10 @@ from pyrogram.types import (
     InlineKeyboardMarkup,
     Message,
 )
-from ChampuMusic import app
-from ChampuMusic.misc import SUDOERS
+from KOKUMUSIC import app
+from KOKUMUSIC.misc import SUDOERS
 from .notes import extract_urls
-from ChampuMusic.utils.database import is_gbanned_user
+from KOKUMUSIC.utils.database import is_gbanned_user
 from utils import (
     del_goodbye,
     get_goodbye,
@@ -22,8 +22,8 @@ from utils import (
     set_greetings_off,
 )
 from utils.error import capture_err
-from ChampuMusic.utils.functions import check_format, extract_text_and_keyb
-from ChampuMusic.utils.keyboard import ikb
+from KOKUMUSIC.utils.functions import check_format, extract_text_and_keyb
+from KOKUMUSIC.utils.keyboard import ikb
 from utils.permissions import adminsOnly
 
 
