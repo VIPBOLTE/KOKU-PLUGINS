@@ -8,6 +8,8 @@ from KOKUMUSIC import app
 @app.on_message(filters.command(["gemini"], prefixes=["/", "!", "%", ",", "", ".", "@"]))
 async def gemini_handler(client, message):
     await app.send_chat_action(message.chat.id, ChatAction.TYPING)
+    
+    # Extract user input
     if (
         message.text.startswith(f"/gemini@{app.username}")
         and len(message.text.split(" ", 1)) > 1
@@ -23,12 +25,21 @@ async def gemini_handler(client, message):
             return
 
     try:
+        # Call the API
         response = api.gemini(user_input)
-        await app.send_chat_action(message.chat.id, ChatAction.TYPING)
-        x = response["results"]
-        if x:
-            await message.reply_text(x, quote=True)
+        
+        # Check if response is not None
+        if response is not None and "results" in response:
+            x = response["results"]
+            if x:
+                await message.reply_text(x, quote=True)
+            else:
+                await message.reply_text("sᴏʀʀʏ sɪʀ! ᴘʟᴇᴀsᴇ Tʀʏ ᴀɢᴀɪɴ")
         else:
-            await message.reply_text("sᴏʀʀʏ sɪʀ! ᴘʟᴇᴀsᴇ Tʀʏ ᴀɢᴀɪɴ")
+            # Handle case where response is None or doesn't have "results"
+            await message.reply_text("Sorry, no results found or API error.")
+    
     except requests.exceptions.RequestException as e:
-        pass
+        # Log or handle the exception
+        print(f"Request failed: {e}")
+        await message.reply_text("There was an issue with the request. Please try again later.")
