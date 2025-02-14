@@ -2,7 +2,7 @@ import requests
 from ChampuAPI import api
 from pyrogram import filters
 from pyrogram.enums import ChatAction
-from ChampuMusic import app
+from KOKUMUSIC import app
 
 
 @app.on_message(filters.command(["gemini"]))
