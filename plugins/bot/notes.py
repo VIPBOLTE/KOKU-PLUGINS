@@ -6,8 +6,8 @@ from pyrogram import filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from config import BANNED_USERS
-from ChampuMusic import app
-from ChampuMusic.utils.database import (
+from KOKUMUSIC import app
+from KOKUMUSIC.utils.database import (
     delete_note,
     deleteall_notes,
     get_note,
@@ -15,12 +15,12 @@ from ChampuMusic.utils.database import (
     save_note,
 )
 from utils.error import capture_err
-from ChampuMusic.utils.functions import (
+from KOKUMUSIC.utils.functions import (
     check_format,
     extract_text_and_keyb,
     get_data_and_name,
 )
-from ChampuMusic.utils.keyboard import ikb
+from KOKUMUSIC.utils.keyboard import ikb
 from utils.permissions import adminsOnly, member_permissions
 
 
