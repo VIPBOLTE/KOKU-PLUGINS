@@ -8,7 +8,7 @@ import os
 import re
 
 
-from config import API_ID, API_HASH, BOT_TOKEN, MONGO_URL, BOT_IMAGE, BOT_USERNAME, OWNER_USERNAME, SUPPORT_GROUP, UPDATES_CHANNEL
+from config import MONGO_URL, SUPPORT_GROUP, UPDATES_CHANNEL
 from KOKUMUSIC import app as bot
 
 async def is_admins(chat_id: int):
