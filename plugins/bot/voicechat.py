@@ -1,4 +1,4 @@
-from KOKUMUSIC.misc import SPECIAL_ID
+
 from pyrogram import filters
 from pyrogram.enums import ChatType
 from strings import get_string
@@ -17,7 +17,7 @@ from KOKUMUSIC.logging import LOGGER
 
 @app.on_message(
     filters.command(["vcuser", "vcusers", "vcmember", "vcmembers"]) & filters.admin
-    & (filters.user(OWNER_ID) | filters.user(SPECIAL_ID))
+    & (filters.user(OWNER_ID)))
 )
 async def vc_members(client, message):
     try:
