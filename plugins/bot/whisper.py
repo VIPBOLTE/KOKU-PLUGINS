@@ -1,4 +1,4 @@
-from ChampuMusic import app
+from KOKUMUSIC import app
 from pyrogram import filters
 from pyrogram.types import (
     InlineQueryResultArticle, InputTextMessageContent,
