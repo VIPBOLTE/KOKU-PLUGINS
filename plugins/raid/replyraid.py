@@ -8,7 +8,7 @@ app = Client(
     api_hash = config.API_HASH,
     session_string = config.STRING1,
 )
-fuckraiddb = MongoClient(MONGO_DB_URI)
+fuckraiddb = MongoClient(config.MONGO_DB_URI)
 
 async def is_fuckraid_user(user_id: int) -> bool:
     user = await fuckraiddb.find_one({"user_id": user_id})
