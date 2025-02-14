@@ -8,7 +8,7 @@ import os
 import re
 
 
-from config import MONGO_URL, SUPPORT_GROUP, SUPPORT_CHANNEL
+from config import MONGO_DB_URI, SUPPORT_GROUP, SUPPORT_CHANNEL
 from KOKUMUSIC import app as bot
 
 async def is_admins(chat_id: int):
@@ -48,7 +48,7 @@ async def chatbotofd(client, message):
     filters.command("chatbot on", prefixes=["/", ".", "?", "-"])
     & ~filters.private)
 async def chatboton(client, message):
-    vdb = MongoClient(MONGO_URL)    
+    vdb = MongoClient(MONGO_DB_URI)    
     v = vdb["vDb"]["v"]     
     if message.from_user:
         user = message.from_user.id
@@ -260,7 +260,7 @@ async def vprivate(client: Client, message: Message):
 )
 async def vprivatesticker(client: Client, message: Message):
 
-   chatdb = MongoClient(MONGO_URL)
+   chatdb = MongoClient(MONGO_DB_URI)
    chatai = chatdb["Word"]["WordDb"] 
    if not message.reply_to_message:
        await bot.send_chat_action(message.chat.id, enums.ChatAction.TYPING)
