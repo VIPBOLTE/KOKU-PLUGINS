@@ -25,7 +25,7 @@ async def is_admins(chat_id: int):
     filters.command("chatbot off", prefixes=["/", ".", "?", "-"])
     & ~filters.private)
 async def chatbotofd(client, message):
-    vdb = MongoClient(MONGO_URL)    
+    vdb = MongoClient(MONGO_DB_URI)    
     v = vdb["vDb"]["v"]     
     if message.from_user:
         user = message.from_user.id
@@ -84,11 +84,11 @@ async def chatbot(client, message):
 )
 async def vai(client: Client, message: Message):
 
-   chatdb = MongoClient(MONGO_URL)
+   chatdb = MongoClient(MONGO_DB_URI)
    chatai = chatdb["Word"]["WordDb"]   
 
    if not message.reply_to_message:
-       vdb = MongoClient(MONGO_URL)
+       vdb = MongoClient(MONGO_DB_URI)
        v = vdb["vDb"]["v"] 
        is_v = v.find_one({"chat_id": message.chat.id})
        if not is_v:
@@ -108,7 +108,7 @@ async def vai(client: Client, message: Message):
                    await message.reply_text(f"{hey}")
    
    if message.reply_to_message:  
-       vdb = MongoClient(MONGO_URL)
+       vdb = MongoClient(MONGO_DB_URI)
        v = vdb["vDb"]["v"] 
        is_v = v.find_one({"chat_id": message.chat.id})    
        getme = await bot.get_me()
@@ -150,11 +150,11 @@ async def vai(client: Client, message: Message):
 )
 async def vstickerai(client: Client, message: Message):
 
-   chatdb = MongoClient(MONGO_URL)
+   chatdb = MongoClient(MONGO_DB_URI)
    chatai = chatdb["Word"]["WordDb"]   
 
    if not message.reply_to_message:
-       vdb = MongoClient(MONGO_URL)
+       vdb = MongoClient(MONGO_DB_URI)
        v = vdb["vDb"]["v"] 
        is_v = v.find_one({"chat_id": message.chat.id})
        if not is_v:
@@ -174,7 +174,7 @@ async def vstickerai(client: Client, message: Message):
                    await message.reply_sticker(f"{hey}")
    
    if message.reply_to_message:
-       vdb = MongoClient(MONGO_URL)
+       vdb = MongoClient(MONGO_DB_URI)
        v = vdb["vDb"]["v"] 
        is_v = v.find_one({"chat_id": message.chat.id})
        getme = await bot.get_me()
@@ -217,7 +217,7 @@ async def vstickerai(client: Client, message: Message):
 )
 async def vprivate(client: Client, message: Message):
 
-   chatdb = MongoClient(MONGO_URL)
+   chatdb = MongoClient(MONGO_DB_URI)
    chatai = chatdb["Word"]["WordDb"]
    if not message.reply_to_message: 
        await bot.send_chat_action(message.chat.id, enums.ChatAction.TYPING)
