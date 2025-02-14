@@ -7,7 +7,7 @@ from pyrogram.enums import ChatAction
 from pyrogram.types import InlineKeyboardMarkup, Message
 
 from config import MONGO_URL
-from Champu import ChampuBot
+from KOKUMUSIC.core.call import KOKU
 from Champu.modules.helpers import CHATBOT_ON, is_admins
 
 
