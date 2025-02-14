@@ -11,7 +11,7 @@ from Champu import ChampuBot
 from Champu.modules.helpers import CHATBOT_ON, is_admins
 
 
-@ChampuBot.on_cmd("chatbot", group_only=True)
+@KOKU.on_cmd("chatbot", group_only=True)
 @adminsOnly("can_delete_messages")
 async def chaton_(_, m: Message):
     await m.reply_text(
@@ -21,7 +21,7 @@ async def chaton_(_, m: Message):
     return
 
 
-@ChampuBot.on_message(
+@KOKU.on_message(
     (filters.text | filters.sticker | filters.group) & ~filters.private & ~filters.bot, group=4
 )
 async def chatbot_text(client: Client, message: Message):
@@ -110,7 +110,7 @@ async def chatbot_text(client: Client, message: Message):
                     )
 
 
-@ChampuBot.on_message(
+@KOKU.on_message(
     (filters.sticker | filters.group | filters.text) & ~filters.private & ~filters.bot, group=4
 )
 async def chatbot_sticker(client: Client, message: Message):
@@ -201,7 +201,7 @@ async def chatbot_sticker(client: Client, message: Message):
                     )
 
 
-@ChampuBot.on_message(
+@KOKU.on_message(
     (filters.text | filters.sticker | filters.group) & ~filters.private & ~filters.bot, group=4
 )
 async def chatbot_pvt(client: Client, message: Message):
@@ -247,7 +247,7 @@ async def chatbot_pvt(client: Client, message: Message):
                 await message.reply_text(f"{hey}")
 
 
-@ChampuBot.on_message(
+@KOKU.on_message(
     (filters.sticker | filters.sticker | filters.group)
     & ~filters.private
     & ~filters.bot,
