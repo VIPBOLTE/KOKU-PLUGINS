@@ -27,89 +27,89 @@ async def perform_raid(
     raid_messages: List[str],
     base_delay: float
 ):
-    """Helper function to handle raid logic."""
+    """Handle raid operations with flood control and safety checks"""
     try:
-        # Parse arguments
         args = message.text.split()
         reply = message.reply_to_message
 
-        # Validate command format
-        if (len(args) < 2 and not reply) or (len(args) < 3 and not reply):
+        # Validate command structure
+        if not ((len(args) >= 2 and not reply) or (len(args) >= 3 and reply)):
             await message.reply_text("**Usage:**\n`.command [count] [username/reply]`")
             return
 
-        # Extract and validate count
         try:
             count = int(args[1])
-            count = min(max(count, 1), MAX_RAID_COUNT)  # Ensure count is within limits
+            count = min(max(count, 1), MAX_RAID_COUNT)
         except (IndexError, ValueError):
             await message.reply_text(f"⚠️ Invalid count! Use 1-{MAX_RAID_COUNT}")
             return
 
-        # Get target user
-        if reply:
-            user = reply.from_user
-        else:
-            try:
-                user = await client.get_users(args[2])
-            except (IndexError, PeerIdInvalid):
-                await message.reply_text("❌ User not found!")
-                return
+        # Resolve target user
+        target_user = reply.from_user if reply else await client.get_users(args[2])
 
         # Security checks
-        chat_id = message.chat.id
-        if chat_id in PROTECTED_GROUPS:
+        chat = message.chat
+        if chat.id in PROTECTED_GROUPS:
             await message.reply_text("❌ Protected group!")
             return
             
-        if user.id in VERIFIED_SET:
-            await message.reply_text("⚠️ Can't target verified users!")
-            return
-            
-        if user.id in SUDOERS:
-            await message.reply_text("🚫 Target is sudo user!")
+        if target_user.id in VERIFIED_SET.union(SUDOERS):
+            await message.reply_text("🚫 Protected user!")
             return
 
-        # Delete command message safely
+        # Secure message deletion
         try:
             await message.delete()
-        except Exception as del_error:
-            print(f"Failed to delete message: {del_error}")
+        except Exception as del_err:
+            print(f"Message deletion failed: {del_err}")
 
-        # Execute raid with flood control
+        # Raid execution with flood control
+        success_count = 0
         for _ in range(count):
             try:
                 await client.send_message(
-                    chat_id,
-                    f"{user.mention} {random.choice(raid_messages)}"
+                    chat.id,
+                    f"{target_user.mention} {random.choice(raid_messages)}"
                 )
-                # Randomized delay to avoid detection
-                await asyncio.sleep(base_delay * random.uniform(0.8, 1.2))
-            except FloodWait as flood:
-                await asyncio.sleep(flood.value)
-            except (UserIsBlocked, PeerIdInvalid) as block_error:
-                await message.reply_text(f"❌ Blocked/Invalid: {block_error}")
+                success_count += 1
+                await asyncio.sleep(base_delay * random.uniform(0.7, 1.3))
+            except FloodWait as e:
+                await asyncio.sleep(e.value + 5)
+            except (UserIsBlocked, PeerIdInvalid):
+                await message.reply_text("❌ Blocked or invalid peer!")
                 break
-            except Exception as general_error:
-                print(f"Raid error: {general_error}")
+            except Exception as e:
+                print(f"Error during raid: {str(e)}")
                 await asyncio.sleep(1)
 
-    except Exception as main_error:
-        await message.reply_text(f"⚡ Main Error: {str(main_error)}")
+        # Completion report
+        await client.send_message(
+            message.from_user.id,
+            f"✅ Raid completed: {success_count}/{count} messages sent",
+            disable_notification=True
+        )
 
-# Command handlers
+    except Exception as main_err:
+        await message.reply_text(f"⚡ Critical error: {str(main_err)}")
+        print(f"Main error: {main_err}")
+
+# Command handlers with fixed syntax
 @Client.on_message(filters.command("pbiraid", prefixes=".") & SUDOERS)
 async def pbiraid_handler(client: Client, message: Message):
+    """Handle power biraids"""
     await perform_raid(client, message, PBIRAID, 0.35)
 
 @Client.on_message(filters.command("oneword", prefixes=".") & SUDOERS)
 async def oneword_handler(client: Client, message: Message):
+    """Single-word raids"""
     await perform_raid(client, message, OneWord, 0.25)
 
-@Client.on_message(filters.command("hiraid", prefixes="." & SUDOERS)
+@Client.on_message(filters.command("hiraid", prefixes=".") & SUDOERS)
 async def hiraid_handler(client: Client, message: Message):
+    """High-intensity raids"""
     await perform_raid(client, message, HIRAID, 0.3)
 
-@Client.on_message(filters.command("raid", prefixes="." & SUDOERS)
+@Client.on_message(filters.command("raid", prefixes=".") & SUDOERS)
 async def raid_handler(client: Client, message: Message):
+    """Standard raid operations"""
     await perform_raid(client, message, RAID, 0.4)
