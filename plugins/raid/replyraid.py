@@ -1,4 +1,12 @@
 
+fuckraiddb = mongodb.fuckraiddb
+
+async def is_fuckraid_user(user_id: int) -> bool:
+    user = await fuckraiddb.find_one({"user_id": user_id})
+    if not user:
+        return False
+    return True
+
 
 async def add_fuckraid_user(user_id: int) -> bool:
     is_fuckraid = await is_fuckraid_user(user_id)
@@ -14,4 +22,3 @@ async def del_fuckraid_user(user_id: int) -> bool:
         return False
     await fuckraiddb.delete_one({"user_id": user_id})
     return True
-
