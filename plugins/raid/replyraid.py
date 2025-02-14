@@ -1,4 +1,13 @@
+import config
 
+from KOKUMUSIC.mongo import mongodb
+
+app = Client(
+    name = "SHUKLA",
+    api_id = config.API_ID,
+    api_hash = config.API_HASH,
+    session_string = config.STRING1,
+)
 fuckraiddb = mongodb.fuckraiddb
 
 async def is_fuckraid_user(user_id: int) -> bool:
