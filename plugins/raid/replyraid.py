@@ -16,34 +16,35 @@ app = Client(
     "my_assistant",
     api_id=config.API_ID,
     api_hash=config.API_HASH,
-    session_string=config.STRING1
+    session_string=config.STRING_SESSION
 )
 
-# Command Handler (User Account के लिए)
-@app.on_message(filters.command("raid") & filters.private)  # सिर्फ प्राइवेट चैट में कमांड
+@app.on_message(filters.command("raid") & filters.private)
 async def raid_assistant(client: Client, message: Message):
     try:
-        # कमांड पार्स करें: !raid 5 @username
+        # Parsing the command arguments
         args = message.text.split()
         if len(args) < 3:
-            await message.reply("**Usage:**\n`!raid [count] [username]`")
+            await message.reply_text("**Usage:**\n`!raid [count] [username]`")
             return
 
         count = int(args[1])
         target = args[2]
 
-        # रैड शुरू करें
+        # Start the raid
         for _ in range(count):
             try:
                 await client.send_message(
                     target,
                     random.choice(RAID_MESSAGES)
                 )
-                await asyncio.sleep(random.uniform(0.5, 1.5))  # Anti-Flood Delay
+                await asyncio.sleep(random.uniform(0.5, 1.5))  # Anti-flood delay
             except FloodWait as e:
-                await asyncio.sleep(e.value + 5)  # FloodWait हेंडल करें
+                await asyncio.sleep(e.value + 5)  # Handle FloodWait
 
-        await message.reply(f"✅ {count} रैड मैसेज भेज दिए गए {target} को!")
+        # Delete the original message and send the reply
+        await message.delete()  # Await delete
+        await message.reply_text(f"✅ {count} रैड मैसेज भेज दिए गए {target} को!")  # Await reply_text
 
     except Exception as e:
-        await message.reply(f"❌ Error: {str(e)}")
+        await message.reply_text(f"❌ Error: {str(e)}")
