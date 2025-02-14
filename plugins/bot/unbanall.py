@@ -1,5 +1,5 @@
 from pyrogram import enums, filters
-from ChampuMusic import app
+from KOKUMUSIC import app
 
 BOT_ID = app.id
 
