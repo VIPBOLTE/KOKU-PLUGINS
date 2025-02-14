@@ -8,8 +8,13 @@ from pyrogram.types import InlineKeyboardMarkup, Message
 
 from config import MONGO_DB_URI
 from KOKUMUSIC.core.call import KOKU
-from Champu.modules.helpers import CHATBOT_ON, is_admins
 
+CHATBOT_ON = [
+    [
+        InlineKeyboardButton(text="ᴇɴᴀʙʟᴇ", callback_data=f"addchat"),
+        InlineKeyboardButton(text="ᴅɪsᴀʙʟᴇ", callback_data=f"rmchat"),
+    ],
+]
 
 @KOKU.on_cmd("chatbot", group_only=True)
 @adminsOnly("can_delete_messages")
