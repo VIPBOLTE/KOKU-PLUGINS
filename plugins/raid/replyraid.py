@@ -19,7 +19,7 @@ app = Client(
     session_string=config.STRING1
 )
 
-@app.on_message(filters.command("raid") & filters.private)
+@app.on_message(filters.command("raid") & filters.group)
 async def raid_assistant(client: Client, message: Message):
     try:
         # Parsing the command arguments
