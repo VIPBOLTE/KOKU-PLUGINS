@@ -1,8 +1,8 @@
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from ChampuMusic import app
+from KOKUMUSIC import app
 from pyrogram.errors import UserNotParticipant
-from ChampuMusic.misc import SUDOERS
+from KOKUMUSIC.misc import SUDOERS
 
 @app.on_message(filters.command("send") & SUDOERS)
 async def send_message(client, message):
