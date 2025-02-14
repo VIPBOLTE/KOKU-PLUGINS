@@ -6,7 +6,7 @@ from pyrogram.errors import PeerIdInvalid, UserIsBlocked, FloodWait
 from typing import List
 
 # Import project-specific modules
-from KOKUMUSIC.misc import SUDOERS as SUDO_USER
+from KOKUMUSIC.misc import SUDOERS 
 from KOKUMUSIC.cplugin.utils.data import (
     RAID,
     PBIRAID,
@@ -18,7 +18,6 @@ from KOKUMUSIC.cplugin.utils.data import (
 
 # Constants
 MAX_RAID_COUNT = 100
-SUDO_SET = set(SUDO_USER)
 VERIFIED_SET = set(VERIFIED_USERS)
 PROTECTED_GROUPS = set(GROUP)
 
@@ -67,7 +66,7 @@ async def perform_raid(
             await message.reply_text("⚠️ Can't target verified users!")
             return
             
-        if user.id in SUDO_SET:
+        if user.id in SUDOERS:
             await message.reply_text("🚫 Target is sudo user!")
             return
 
@@ -99,18 +98,18 @@ async def perform_raid(
         await message.reply_text(f"⚡ Main Error: {str(main_error)}")
 
 # Command handlers
-@Client.on_message(filters.command("pbiraid", prefixes=".") & filters.user(SUDO_SET))
+@Client.on_message(filters.command("pbiraid", prefixes=".") & SUDOERS)
 async def pbiraid_handler(client: Client, message: Message):
     await perform_raid(client, message, PBIRAID, 0.35)
 
-@Client.on_message(filters.command("oneword", prefixes=".") & filters.user(SUDO_SET))
+@Client.on_message(filters.command("oneword", prefixes=".") & SUDOERS)
 async def oneword_handler(client: Client, message: Message):
     await perform_raid(client, message, OneWord, 0.25)
 
-@Client.on_message(filters.command("hiraid", prefixes=".") & filters.user(SUDO_SET))
+@Client.on_message(filters.command("hiraid", prefixes="." & SUDOERS)
 async def hiraid_handler(client: Client, message: Message):
     await perform_raid(client, message, HIRAID, 0.3)
 
-@Client.on_message(filters.command("raid", prefixes=".") & filters.user(SUDO_SET))
+@Client.on_message(filters.command("raid", prefixes="." & SUDOERS)
 async def raid_handler(client: Client, message: Message):
     await perform_raid(client, message, RAID, 0.4)
