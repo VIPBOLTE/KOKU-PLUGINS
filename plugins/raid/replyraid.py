@@ -33,7 +33,6 @@ async def del_fuckraid_user(user_id: int) -> bool:
     return True
 
 @app.on_message(cdx(["fr", "rr", "rraid", "fuckraid"]))
-@sudo_users_only
 async def add_fuck_raid(client, message):
     try:
         aux = await eor(message, "**🔄 Processing ...**")
