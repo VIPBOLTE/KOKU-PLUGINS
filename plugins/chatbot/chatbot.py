@@ -1,3 +1,4 @@
+from pyrogram.enums import ChatMembersFilter
 from pyrogram import Client, filters, idle
 from pyrogram.types import *
 from pymongo import MongoClient
@@ -15,9 +16,10 @@ async def is_admins(chat_id: int):
     return [
         member.user.id
         async for member in bot.get_chat_members(
-            chat_id, filter="administrators"
+            chat_id, filter=ChatMembersFilter.ADMINISTRATORS
         )
     ]
+
 
 
 
