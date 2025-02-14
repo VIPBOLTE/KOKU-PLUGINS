@@ -9,15 +9,7 @@ import re
 
 
 from config import API_ID, API_HASH, BOT_TOKEN, MONGO_URL, BOT_IMAGE, BOT_USERNAME, OWNER_USERNAME, SUPPORT_GROUP, UPDATES_CHANNEL
-
-
-bot = Client(
-    "KOKUMUSIC" ,
-    api_id = API_ID,
-    api_hash = API_HASH ,
-    bot_token = BOT_TOKEN
-)
-
+from KOKUMUSIC import app as bot
 
 async def is_admins(chat_id: int):
     return [
