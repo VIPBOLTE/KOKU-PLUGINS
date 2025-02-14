@@ -1,5 +1,5 @@
 import requests
-from ChampuAPI import api
+from KOKUAPI import api
 from pyrogram import filters
 from pyrogram.enums import ChatAction
 from KOKUMUSIC import app
