@@ -1,7 +1,7 @@
 import requests
 from pyrogram import filters
 
-from ChampuMusic import app
+from KOKUMUSIC import app
 from SafoneAPI import SafoneAPI
 
 
