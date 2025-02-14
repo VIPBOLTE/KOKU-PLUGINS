@@ -20,7 +20,7 @@ from pyrogram.file_id import FileId
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 import pyrogram
 from uuid import uuid4
-from ChampuMusic import app
+from KOKUMUSIC import app
 from utils.error import capture_err
 
 BOT_USERNAME = app.username
