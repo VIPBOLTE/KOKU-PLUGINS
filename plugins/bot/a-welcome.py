@@ -7,8 +7,8 @@ from pyrogram.types import ChatMemberUpdated, Message
 
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from pyrogram.errors import InviteRequestSent
-from ChampuMusic import app
-from ChampuMusic.utils.database import get_assistant
+from KOKUMUSIC import app
+from KOKUMUSIC.utils.database import get_assistant
 from pymongo import MongoClient
 from config import MONGO_DB_URI
 
