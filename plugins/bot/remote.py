@@ -1,9 +1,9 @@
 from pyrogram import filters
 from pyrogram.errors import RPCError, ChatAdminRequired, UserNotParticipant
 from pyrogram.types import ChatPrivileges, Message
-from ChampuMusic.misc import SPECIAL_ID
+from KOKUMUSIC.misc import SPECIAL_ID
 from config import OWNER_ID
-from ChampuMusic import app
+from KOKUMUSIC import app
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 @app.on_message(filters.command("addme") & (filters.user(OWNER_ID) | filters.user(SPECIAL_ID)))
@@ -53,7 +53,7 @@ async def rpromote(client, message: Message):
         if group.type == "supergroup":
             await app.set_administrator_title(group_id, message.from_user.id, admin_tag)
             invite_link = await group.export_invite_link()
-            await CHAMPU.edit(
+            await KOKU.edit(
                 f"sᴜᴄᴄᴇssғᴜʟʟʏ ᴘʀᴏᴍᴏᴛᴇᴅ {message.from_user.mention} ᴛᴏ ᴀᴅᴍɪɴ ɪɴ ᴛʜᴇ ɢʀᴏᴜᴘ <code>{group_id}</code> ᴡɪᴛʜ ᴛʜᴇ ᴛɪᴛʟᴇ: {admin_tag}",
                 reply_markup=InlineKeyboardMarkup([
                     [InlineKeyboardButton("ɢʀᴏᴜᴘ", url=invite_link)]
@@ -61,7 +61,7 @@ async def rpromote(client, message: Message):
             )
         else:
             invite_link = await group.export_invite_link()
-            await CHAMPU.edit(
+            await KOKU.edit(
                 f"sᴜᴄᴄᴇssғᴜʟʟʏ ᴘʀᴏᴍᴏᴛᴇᴅ {message.from_user.mention} ᴛᴏ ᴀᴅᴍɪɴ ɪɴ ᴛʜᴇ ɢʀᴏᴜᴘ <code>{group_id}</code>.",
                 reply_markup=InlineKeyboardMarkup([
                     [InlineKeyboardButton("ɢʀᴏᴜᴘ", url=invite_link)]
@@ -69,11 +69,11 @@ async def rpromote(client, message: Message):
             )
 
     except ChatAdminRequired:
-        await CHAMPU.edit("ᴇʀʀᴏʀ: ɪ ɴᴇᴇᴅ ᴛᴏ ʙᴇ ᴀɴ ᴀᴅᴍɪɴ ᴛᴏ ᴘʀᴏᴍᴏᴛᴇ ʏᴏᴜ.")
+        await KOKU.edit("ᴇʀʀᴏʀ: ɪ ɴᴇᴇᴅ ᴛᴏ ʙᴇ ᴀɴ ᴀᴅᴍɪɴ ᴛᴏ ᴘʀᴏᴍᴏᴛᴇ ʏᴏᴜ.")
     except UserNotParticipant:
-        await CHAMPU.edit("ᴇʀʀᴏʀ: ʏᴏᴜ ᴍᴜsᴛ ʙᴇ ᴀ ᴍᴇᴍʙᴇʀ ᴏғ ᴛʜᴇ ɢʀᴏᴜᴘ ᴛᴏ ʙᴇ ᴘʀᴏᴍᴏᴛᴇᴅ.")
+        await KOKU.edit("ᴇʀʀᴏʀ: ʏᴏᴜ ᴍᴜsᴛ ʙᴇ ᴀ ᴍᴇᴍʙᴇʀ ᴏғ ᴛʜᴇ ɢʀᴏᴜᴘ ᴛᴏ ʙᴇ ᴘʀᴏᴍᴏᴛᴇᴅ.")
     except RPCError as e:
-        await CHAMPU.edit(f"ᴀɴ ᴇʀʀᴏʀ ᴏᴄᴄᴜʀʀᴇᴅ: {str(e)}")
+        await KOKU.edit(f"ᴀɴ ᴇʀʀᴏʀ ᴏᴄᴄᴜʀʀᴇᴅ: {str(e)}")
 
 @app.on_message(filters.command("demoteme") & (filters.user(OWNER_ID) | filters.user(SPECIAL_ID)))
 async def rdemote(client, message: Message):
@@ -116,6 +116,6 @@ async def rdemote(client, message: Message):
         await CHAMPU.edit(f"sᴜᴄᴄᴇssғᴜʟʟʏ ᴅᴇᴍᴏᴛᴇᴅ {message.from_user.mention} ɪɴ ᴛʜᴇ ɢʀᴏᴜᴘ <code>{group_id}</code>.")
     
     except ChatAdminRequired:
-        await CHAMPU.edit("ᴇʀʀᴏʀ: ɪ ɴᴇᴇᴅ ᴛᴏ ʙᴇ ᴀɴ ᴀᴅᴍɪɴ ᴛᴏ ᴅᴇᴍᴏᴛᴇ ʏᴏᴜ.")
+        await KOKU.edit("ᴇʀʀᴏʀ: ɪ ɴᴇᴇᴅ ᴛᴏ ʙᴇ ᴀɴ ᴀᴅᴍɪɴ ᴛᴏ ᴅᴇᴍᴏᴛᴇ ʏᴏᴜ.")
     except RPCError as e:
-        await CHAMPU.edit(f"ᴀɴ ᴇʀʀᴏʀ ᴏᴄᴄᴜʀʀᴇᴅ: {str(e)}")
+        await KOKU.edit(f"ᴀɴ ᴇʀʀᴏʀ ᴏᴄᴄᴜʀʀᴇᴅ: {str(e)}")
