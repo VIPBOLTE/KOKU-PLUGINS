@@ -63,7 +63,7 @@ async def chatboton(client, message):
             )
     is_v = v.find_one({"chat_id": message.chat.id})
     if not is_v:           
-        await message.reply_text(f"💥 𝐕 𝐂𝐡𝐚𝐭𝐛𝐨𝐭 𝐈𝐬 𝐀𝐥𝐫𝐞𝐚𝐝𝐲𝐄𝐧𝐚𝐛𝐥𝐞𝐝🌷!\n\n𝐀𝐧𝐲 𝐏𝐫𝐨𝐛𝐥𝐞𝐦 𝐓𝐨 [𝐑𝐞𝐩𝐨𝐫𝐭]{SUPPORT_GROUP}  🥀\n\n[𝐔𝐩𝐝𝐚𝐭𝐞𝐬] {SUPPORT_CHANNEL} 🌷", parse_mode=ParseMode.MARKDOWN)
+        await message.reply_text(f"💥 𝐕 𝐂𝐡𝐚𝐭𝐛𝐨𝐭 𝐈𝐬 𝐀𝐥𝐫𝐞𝐚𝐝𝐲𝐄𝐧𝐚𝐛𝐥𝐞𝐝🌷!\n\n𝐀𝐧𝐲 𝐏𝐫𝐨𝐛𝐥𝐞𝐦 𝐓𝐨 [𝐑𝐞𝐩𝐨𝐫𝐭]{SUPPORT_GROUP}  🥀\n\n[𝐔𝐩𝐝𝐚𝐭𝐞𝐬]{SUPPORT_CHANNEL} 🌷", parse_mode=ParseMode.MARKDOWN)
     if is_v:
         v.delete_one({"chat_id": message.chat.id})
         await message.reply_text(f"💥 𝐕 𝐂𝐡𝐚𝐭𝐛𝐨𝐭 𝐈𝐬 𝐄𝐧𝐚𝐛𝐥𝐞𝐝 🌷!\n\n𝐀𝐧𝐲 𝐏𝐫𝐨𝐛𝐥𝐞𝐦 𝐓𝐨 [𝐑𝐞𝐩𝐨𝐫𝐭]{SUPPORT_GROUP}  🥀\n\n[𝐔𝐩𝐝𝐚𝐭𝐞𝐬]{SUPPORT_CHANNEL} 🌷", parse_mode=ParseMode.MARKDOWN)
