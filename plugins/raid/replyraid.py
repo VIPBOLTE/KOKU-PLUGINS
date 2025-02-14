@@ -1,6 +1,5 @@
 import config
 from pymongo import MongoClient
-from KOKUMUSIC.mongo import mongodb
 
 app = Client(
     name = "SHUKLA",
