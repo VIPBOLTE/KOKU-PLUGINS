@@ -1,6 +1,6 @@
 import requests
 from pyrogram import filters
-from ChampuMusic import app
+from KOKUMUSIC import app
 
 truth_api_url = "https://api.truthordarebot.xyz/v1/truth"
 dare_api_url = "https://api.truthordarebot.xyz/v1/dare"
