@@ -16,7 +16,7 @@ from KOKUMUSIC.cplugin.utils.data import (
 )
 
 # ======================== PBIRAID COMMAND ========================= #
-@Client.on_message(filters.command("pbiraid", prefixes=".") & filters.user(SUDO_USER))
+@Client.on_message(filters.command("pbiraid", prefixes=".") & filters.user(*SUDO_USER))
 async def pbiraid_handler(client: Client, message: Message):
     try:
         args = message.text.split(maxsplit=2)
@@ -62,7 +62,7 @@ async def pbiraid_handler(client: Client, message: Message):
         await message.reply_text(f"**PBIRAID Error:** {str(e)}")
 
 # ======================== ONEWORD COMMAND ========================= #
-@Client.on_message(filters.command("oneword", prefixes=".") & filters.user(SUDO_USER))
+@Client.on_message(filters.command("oneword", prefixes=".") & filters.user(*SUDO_USER))
 async def oneword_handler(client: Client, message: Message):
     try:
         args = message.text.split(maxsplit=2)
@@ -108,7 +108,7 @@ async def oneword_handler(client: Client, message: Message):
         await message.reply_text(f"**ONEWORD Error:** {str(e)}")
 
 # ======================== HIRAID COMMAND ========================== #
-@Client.on_message(filters.command("hiraid", prefixes=".") & filters.user(SUDO_USER))
+@Client.on_message(filters.command("hiraid", prefixes=".") & filters.user(*SUDO_USER))
 async def hiraid_handler(client: Client, message: Message):
     try:
         args = message.text.split(maxsplit=2)
@@ -154,7 +154,7 @@ async def hiraid_handler(client: Client, message: Message):
         await message.reply_text(f"**HIRAID Error:** {str(e)}")
 
 # ======================== MAIN RAID COMMAND ======================= #
-@Client.on_message(filters.command("raid", prefixes=".") & filters.user(SUDO_USER))
+@Client.on_message(filters.command("raid", prefixes=".") & filters.user(*SUDO_USER))
 async def raid_handler(client: Client, message: Message):
     try:
         args = message.text.split(maxsplit=2)
