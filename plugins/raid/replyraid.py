@@ -39,7 +39,7 @@ async def raid_assistant(client: Client, message: Message):
                     target,
                     random.choice(RAID_MESSAGES)
                 )
-                await asyncio.sleep(random.uniform(0.5, 1.5)  # Anti-Flood Delay
+                await asyncio.sleep(random.uniform(0.5, 1.5))  # Anti-Flood Delay
             except FloodWait as e:
                 await asyncio.sleep(e.value + 5)  # FloodWait हेंडल करें
 
