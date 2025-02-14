@@ -5,7 +5,7 @@ from pyrogram.enums import ChatAction
 from KOKUMUSIC import app
 
 
-@app.on_message(filters.command(["gemini"],prefixes=["/", "!", "%", ",", "", ".", "@"]))
+@app.on_message(filters.command(["gemini"], prefixes=["/", "!", "%", ",", "", ".", "@"]))
 async def gemini_handler(client, message):
     await app.send_chat_action(message.chat.id, ChatAction.TYPING)
     if (
