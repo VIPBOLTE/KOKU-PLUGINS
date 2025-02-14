@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 from KOKUMUSIC import app
 from utils.error import capture_err
 from utils.permissions import adminsOnly, member_permissions
-from ChampuMusic.utils.keyboard import ikb
+from KOKUMUSIC.utils.keyboard import ikb
 from .notes import extract_urls
 from KOKUMUSIC.utils.functions import (
     check_format,
