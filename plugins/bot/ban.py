@@ -14,13 +14,13 @@ from pyrogram.types import (
 from string import ascii_lowercase
 from typing import Dict, Union
 
-from ChampuMusic import app
-from ChampuMusic.misc import SUDOERS
-from ChampuMusic.core.mongo import mongodb
+from KOKUMUSIC import app
+from KOKUMUSIC.misc import SUDOERS
+from KOKUMUSIC.core.mongo import mongodb
 from utils.error import capture_err
-from ChampuMusic.utils.keyboard import ikb
-from ChampuMusic.utils.database import save_filter
-from ChampuMusic.utils.functions import (
+from KOKUMUSIC.utils.keyboard import ikb
+from KOKUMUSIC.utils.database import save_filter
+from KOKUMUSIC.utils.functions import (
     extract_user,
     extract_user_and_reason,
     time_converter,
