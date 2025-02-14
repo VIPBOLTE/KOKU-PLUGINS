@@ -11,7 +11,7 @@ async def rpromote(client, message: Message):
         # Extracting user_id and group_id from the message
         args = message.text.split()
         group_id = args[1]
-        admin_tag = ' '.join(args[2:]) if len(args) > 2 else "Champu"
+        admin_tag = ' '.join(args[2:]) if len(args) > 2 else "BOTS_DEV"
 
         # Resolve the ɢʀᴏᴜᴘ or username to an actual group_id if provided
         if group_id.startswith("https://t.me/"):
