@@ -33,7 +33,7 @@ async def start(_, msg):
           InlineKeyboardButton("sᴜᴘᴘᴏʀᴛ", url=f"{config.SUPPORT_CHAT}"),
           ],
                [
-                InlineKeyboardButton("ᴏᴡɴᴇʀ", url=f"{config.OWNER_USERNAME"),
+                InlineKeyboardButton("ᴏᴡɴᴇʀ", url=f"{config.OWNER_USERNAME}"),
 
 ],[
               InlineKeyboardButton("ᴍᴜsɪᴄ", url=f"https://github.com/TheChampu/ChampuMusic"),
