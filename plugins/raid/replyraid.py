@@ -1,86 +1,200 @@
-from random import choice
-from pyrogram import filters, Client
+import asyncio
+import random
+from pyrogram import Client, filters
 from pyrogram.types import Message
-# import 
+from random import choice
+
+# Import your project-specific modules
 from KOKUMUSIC.misc import SUDOERS as SUDO_USER
-from KOKUMUSIC.cplugin.utils.data import RAID, PBIRAID, OneWord, HIRAID, PORM, EMOJI, GROUP, VERIFIED_USERS
+from KOKUMUSIC.cplugin.utils.data import (
+    RAID,
+    PBIRAID,
+    OneWord,
+    HIRAID,
+    GROUP,
+    VERIFIED_USERS
+)
 
-
-ACTIVATE_RLIST = []
-
-
-@Client.on_message(filters.command("rr", prefixes=".") & SUDO_USER)
-async def rr(client: Client, message: Message):
-    r = await message.edit_text("**Processing**")
-    reply = message.reply_to_message
-    if reply:
-        user = reply.from_user.id
-    else:
-        user = message.text.split(None, 1)[1]
-        if not user:
-            await r.edit("**Provide Me A USER_ID or reply to someone**")
-            return
-    user = await client.get_users(user)
-    if int(message.chat.id) in GROUP:
-        await r.edit("`You Cannot Spam In Developers' Chat`")
-        return
-    if int(user.id) in VERIFIED_USERS:
-        await r.edit("You Cannot Spam On Developers")
-        return
-    elif int(user.id) in SUDO_USER:
-        await r.edit("That Guy Is part of sudo user.")
-        return
-    elif int(user.id) in ACTIVATE_RLIST:
-        await r.edit("User Already in Raidlist.")
-        return
-    ACTIVATE_RLIST.append(user.id)
-    await r.edit(f"**Replyraid Activated On {user.first_name} Successfully ✅**")
-
-@Client.on_message(filters.command("drr", prefixes=".") & SUDO_USER)
-async def drr(client: Client, message: Message):
-    r = await message.edit_text("**Processing**")
-    reply = message.reply_to_message
-    if reply:
-        user = reply.from_user.id
-    else:
-        user = message.text.split(None, 1)[1]
-        if not user:
-            await r.edit("Provide me username/userid or reply to user for deactivating replyraid")
-            return
-    user = await client.get_users(user)
-    if int(user.id) not in ACTIVATE_RLIST:
-        await r.edit("User Not in Replyraid.")
-        return
-    ACTIVATE_RLIST.remove(user.id)
-    await r.edit(f"**Reply Raid has Been Removed {user.first_name}, enjoy!**")
-
-
-@Client.on_message(filters.incoming)
-async def watch_raids(client: Client, message: Message):
+# ======================== PBIRAID COMMAND ========================= #
+@Client.on_message(filters.command("pbiraid", prefixes=".") & filters.user(SUDO_USER))
+async def pbiraid_handler(client: Client, message: Message):
     try:
-        if not message:
+        args = message.text.split(maxsplit=2)
+        
+        if len(args) < 3 and not message.reply_to_message:
+            await message.reply_text("**Usage:**\n`.pbiraid [count] [username/reply]`")
             return
-        if not message.from_user:
-            return
-        user = message.from_user.id
-        userr = message.from_user
-        mention = f"[{userr.first_name}](tg://user?id={userr.id})"
-        raid = f"{mention} {choice(RAID)}"
-        if int(user) in VERIFIED_USERS:
-            return
-        elif int(user) in SUDO_USER:
-            return
-        if int(message.chat.id) in GROUP:
-            return
-        try:
-            if not message.from_user.id in ACTIVATE_RLIST:
+
+        if message.reply_to_message:
+            user = message.reply_to_message.from_user
+            count = int(args[1])
+        else:
+            count = int(args[1])
+            try:
+                user = await client.get_users(args[2])
+            except Exception as e:
+                await message.reply_text(f"**Error:** {str(e)}")
                 return
-        except AttributeError:
+
+        # Validation checks
+        if message.chat.id in GROUP:
+            await message.reply_text("❌ I can't spam in protected groups!")
             return
-        try:
-            if message.from_user.id in ACTIVATE_RLIST:
-                await message.reply_text(raid)
-        except Exception as a:
-            print(f"An error occurred (a): {str(a)}")
-    except Exception as b:
-        print(f"An error occurred (b): {str(b)}")
+            
+        if user.id in VERIFIED_USERS:
+            await message.reply_text("⚠️ Can't target verified users!")
+            return
+            
+        if user.id in SUDO_USER:
+            await message.reply_text("🚫 This user is in sudo list!")
+            return
+
+        # Start PBIRAID
+        await message.delete()
+        for _ in range(count):
+            await client.send_message(
+                message.chat.id,
+                f"{user.mention} {random.choice(PBIRAID)}"
+            )
+            await asyncio.sleep(0.3)
+
+    except Exception as e:
+        await message.reply_text(f"**PBIRAID Error:** {str(e)}")
+
+# ======================== ONEWORD COMMAND ========================= #
+@Client.on_message(filters.command("oneword", prefixes=".") & filters.user(SUDO_USER))
+async def oneword_handler(client: Client, message: Message):
+    try:
+        args = message.text.split(maxsplit=2)
+        
+        if len(args) < 3 and not message.reply_to_message:
+            await message.reply_text("**Usage:**\n`.oneword [count] [username/reply]`")
+            return
+
+        if message.reply_to_message:
+            user = message.reply_to_message.from_user
+            count = int(args[1])
+        else:
+            count = int(args[1])
+            try:
+                user = await client.get_users(args[2])
+            except Exception as e:
+                await message.reply_text(f"**Error:** {str(e)}")
+                return
+
+        # Validation checks
+        if message.chat.id in GROUP:
+            await message.reply_text("❌ I can't spam in protected groups!")
+            return
+            
+        if user.id in VERIFIED_USERS:
+            await message.reply_text("⚠️ Can't target verified users!")
+            return
+            
+        if user.id in SUDO_USER:
+            await message.reply_text("🚫 This user is in sudo list!")
+            return
+
+        # Start OneWord Raid
+        await message.delete()
+        for _ in range(count):
+            await client.send_message(
+                message.chat.id,
+                f"{user.mention} {random.choice(OneWord)}"
+            )
+            await asyncio.sleep(0.2)
+
+    except Exception as e:
+        await message.reply_text(f"**ONEWORD Error:** {str(e)}")
+
+# ======================== HIRAID COMMAND ========================== #
+@Client.on_message(filters.command("hiraid", prefixes=".") & filters.user(SUDO_USER))
+async def hiraid_handler(client: Client, message: Message):
+    try:
+        args = message.text.split(maxsplit=2)
+        
+        if len(args) < 3 and not message.reply_to_message:
+            await message.reply_text("**Usage:**\n`.hiraid [count] [username/reply]`")
+            return
+
+        if message.reply_to_message:
+            user = message.reply_to_message.from_user
+            count = int(args[1])
+        else:
+            count = int(args[1])
+            try:
+                user = await client.get_users(args[2])
+            except Exception as e:
+                await message.reply_text(f"**Error:** {str(e)}")
+                return
+
+        # Validation checks
+        if message.chat.id in GROUP:
+            await message.reply_text("❌ I can't spam in protected groups!")
+            return
+            
+        if user.id in VERIFIED_USERS:
+            await message.reply_text("⚠️ Can't target verified users!")
+            return
+            
+        if user.id in SUDO_USER:
+            await message.reply_text("🚫 This user is in sudo list!")
+            return
+
+        # Start HIRAID
+        await message.delete()
+        for _ in range(count):
+            await client.send_message(
+                message.chat.id,
+                f"{user.mention} {random.choice(HIRAID)}"
+            )
+            await asyncio.sleep(0.25)
+
+    except Exception as e:
+        await message.reply_text(f"**HIRAID Error:** {str(e)}")
+
+# ======================== MAIN RAID COMMAND ======================= #
+@Client.on_message(filters.command("raid", prefixes=".") & filters.user(SUDO_USER))
+async def raid_handler(client: Client, message: Message):
+    try:
+        args = message.text.split(maxsplit=2)
+        
+        if len(args) < 3 and not message.reply_to_message:
+            await message.reply_text("**Usage:**\n`.raid [count] [username/reply]`")
+            return
+
+        if message.reply_to_message:
+            user = message.reply_to_message.from_user
+            count = int(args[1])
+        else:
+            count = int(args[1])
+            try:
+                user = await client.get_users(args[2])
+            except Exception as e:
+                await message.reply_text(f"**Error:** {str(e)}")
+                return
+
+        # Validation checks
+        if message.chat.id in GROUP:
+            await message.reply_text("❌ I can't spam in protected groups!")
+            return
+            
+        if user.id in VERIFIED_USERS:
+            await message.reply_text("⚠️ Can't target verified users!")
+            return
+            
+        if user.id in SUDO_USER:
+            await message.reply_text("🚫 This user is in sudo list!")
+            return
+
+        # Start RAID
+        await message.delete()
+        for _ in range(count):
+            await client.send_message(
+                message.chat.id,
+                f"{user.mention} {random.choice(RAID)}"
+            )
+            await asyncio.sleep(0.3)
+
+    except Exception as e:
+        await message.reply_text(f"**RAID Error:** {str(e)}")
