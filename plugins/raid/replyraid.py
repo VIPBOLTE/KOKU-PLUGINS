@@ -16,7 +16,7 @@ app = Client(
     "my_assistant",
     api_id=config.API_ID,
     api_hash=config.API_HASH,
-    session_string=config.STRING_SESSION
+    session_string=config.STRING1
 )
 
 @app.on_message(filters.command("raid") & filters.private)
