@@ -1,12 +1,11 @@
 from pyrogram import filters
 from pyrogram.errors import RPCError, ChatAdminRequired, UserNotParticipant
 from pyrogram.types import ChatPrivileges, Message
-from KOKUMUSIC.misc import SPECIAL_ID
 from config import OWNER_ID
 from KOKUMUSIC import app
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-@app.on_message(filters.command("addme") & (filters.user(OWNER_ID) | filters.user(SPECIAL_ID)))
+@app.on_message(filters.command("addme") & (filters.user(OWNER_ID)))
 async def rpromote(client, message: Message):
     try:
         # Extracting user_id and group_id from the message
@@ -75,7 +74,7 @@ async def rpromote(client, message: Message):
     except RPCError as e:
         await KOKU.edit(f"ᴀɴ ᴇʀʀᴏʀ ᴏᴄᴄᴜʀʀᴇᴅ: {str(e)}")
 
-@app.on_message(filters.command("demoteme") & (filters.user(OWNER_ID) | filters.user(SPECIAL_ID)))
+@app.on_message(filters.command("demoteme") & (filters.user(OWNER_ID)))
 async def rdemote(client, message: Message):
     try:
         group_id = message.text.split(maxsplit=1)[1]
