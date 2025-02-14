@@ -80,7 +80,7 @@ async def raid_assistant(client: Client, message: Message):
                 # Handle FloodWait error by sleeping for the suggested time
                 await asyncio.sleep(e.value + 5)
 
-        # Delete the original message and send the reply
+        # Delete the original message and send the reply (corrected to await both)
         await message.delete()  # Await delete
         await message.reply_text(f"✅ {count} रैड मैसेज भेज दिए गए {target} को!")  # Await reply_text
 
