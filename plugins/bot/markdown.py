@@ -2,8 +2,8 @@ from pyrogram.enums import ChatType, ParseMode
 from pyrogram.filters import command
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
-from ChampuMusic import app
-from ChampuMusic.utils.functions import MARKDOWN
+from KOKUMUSIC import app
+from KOKUMUSIC.utils.functions import MARKDOWN
 
 
 @app.on_message(command("markdownhelp"))
