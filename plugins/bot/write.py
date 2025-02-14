@@ -1,5 +1,5 @@
 from pyrogram import filters
-from TheApi import api
+from TheAPI import api
 
 from KOKUMUSIC import app
 
