@@ -20,61 +20,68 @@ async def is_admins(chat_id: int):
         )
     ]
 
-
-
-
 @bot.on_message(
-    filters.command("chatbot off", prefixes=["/", ".", "?", "-"])
+    filters.command("chatbot off", prefixes=["/", ".", "?", "-"]) 
     & ~filters.private)
-async def chatbotofd(client, message):
+async def chatbot_off(client, message):
     vdb = MongoClient(MONGO_DB_URI)    
     v = vdb["vDb"]["v"]     
     if message.from_user:
         user = message.from_user.id
         chat_id = message.chat.id
-        if user not in (
-           await is_admins(chat_id)
-        ):
-           return await message.reply_text(
+        if user not in await is_admins(chat_id):
+            return await message.reply_text(
                 "💥 𝐇𝐞𝐲 𝐘𝐨𝐮 𝐀𝐫𝐞 𝐍𝐨𝐭 𝐀 𝐀𝐝𝐦𝐢𝐧 💥"
             )
     is_v = v.find_one({"chat_id": message.chat.id})
     if not is_v:
         v.insert_one({"chat_id": message.chat.id})
-        await message.reply_text(f"🌷 𝐕 𝐂𝐡𝐚𝐭𝐛𝐨𝐭 𝐃𝐢𝐬𝐚𝐛𝐥𝐞𝐝 🥀!\n\n𝐀𝐧𝐲 𝐏𝐫𝐨𝐛𝐥𝐞𝐦 𝐓𝐨 [𝐑𝐞𝐩𝐨𝐫𝐭]{SUPPORT_GROUP}  🥀\n\n[𝐔𝐩𝐝𝐚𝐭𝐞𝐬]{SUPPORT_CHANNEL} 🌷", parse_mode=ParseMode.MARKDOWN)
+        await message.reply_text(
+            f"🌷 𝐕 𝐂𝐡𝐚𝐭𝐛𝐨𝐭 𝐃𝐢𝐬𝐚𝐛𝐥𝐞𝐝 🥀!\n\n𝐀𝐧𝐲 𝐏𝐫𝐨𝐛𝐥𝐞𝐦 𝐓𝐨 [𝐑𝐞𝐩𝐨𝐫𝐭](https://t.me/YourSupportGroup) 🥀\n\n[𝐔𝐩𝐝𝐚𝐭𝐞𝐬](https://t.me/YourSupportChannel) 🌷", 
+            parse_mode=ParseMode.MARKDOWN
+        )
     if is_v:
-        await message.reply_text(f"🌷𝐕 𝐂𝐡𝐚𝐭𝐛𝐨𝐭 𝐈𝐬 𝐀𝐥𝐫𝐞𝐚𝐝𝐭 𝐃𝐢𝐬𝐚𝐛𝐥𝐞𝐝 🥀!\n\n𝐀𝐧𝐲 𝐏𝐫𝐨𝐛𝐥𝐞𝐦 𝐓𝐨 [𝐑𝐞𝐩𝐨𝐫𝐭]{SUPPORT_GROUP}  🥀\n\n[𝐔𝐩𝐝𝐚𝐭𝐞𝐬]{SUPPORT_CHANNEL} 🌷", parse_mode=ParseMode.MARKDOWN)
-    
+        await message.reply_text(
+            f"🌷𝐕 𝐂𝐡𝐚𝐭𝐛𝐨𝐭 𝐈𝐬 𝐀𝐥𝐫𝐞𝐚𝐝𝐲 𝐃𝐢𝐬𝐚𝐛𝐥𝐞𝐝 🥀!\n\n𝐀𝐧𝐲 𝐏𝐫𝐨𝐛𝐥𝐞𝐦 𝐓𝐨 [𝐑𝐞𝐩𝐨𝐫𝐭](https://t.me/YourSupportGroup) 🥀\n\n[𝐔𝐩𝐝𝐚𝐭𝐞𝐬](https://t.me/YourSupportChannel) 🌷", 
+            parse_mode=ParseMode.MARKDOWN
+        )
+
 
 @bot.on_message(
-    filters.command("chatbot on", prefixes=["/", ".", "?", "-"])
+    filters.command("chatbot on", prefixes=["/", ".", "?", "-"]) 
     & ~filters.private)
-async def chatboton(client, message):
+async def chatbot_on(client, message):
     vdb = MongoClient(MONGO_DB_URI)    
     v = vdb["vDb"]["v"]     
     if message.from_user:
         user = message.from_user.id
         chat_id = message.chat.id
-        if user not in (
-            await is_admins(chat_id)
-        ):
+        if user not in await is_admins(chat_id):
             return await message.reply_text(
                 "You are not admin"
             )
     is_v = v.find_one({"chat_id": message.chat.id})
     if not is_v:           
-        await message.reply_text(f"💥 𝐕 𝐂𝐡𝐚𝐭𝐛𝐨𝐭 𝐈𝐬 𝐀𝐥𝐫𝐞𝐚𝐝𝐲𝐄𝐧𝐚𝐛𝐥𝐞𝐝🌷!\n\n𝐀𝐧𝐲 𝐏𝐫𝐨𝐛𝐥𝐞𝐦 𝐓𝐨 [𝐑𝐞𝐩𝐨𝐫𝐭]{SUPPORT_GROUP}  🥀\n\n[𝐔𝐩𝐝𝐚𝐭𝐞𝐬]{SUPPORT_CHANNEL} 🌷", parse_mode=ParseMode.MARKDOWN)
+        await message.reply_text(
+            f"💥 𝐕 𝐂𝐡𝐚𝐭𝐛𝐨𝐭 𝐈𝐬 𝐀𝐥𝐫𝐞𝐚𝐝𝐲 𝐄𝐧𝐚𝐛𝐥𝐞𝐝 🌷!\n\n𝐀𝐧𝐲 𝐏𝐫𝐨𝐛𝐥𝐞𝐦 𝐓𝐨 [𝐑𝐞𝐩𝐨𝐫𝐭](https://t.me/YourSupportGroup) 🥀\n\n[𝐔𝐩𝐝𝐚𝐭𝐞𝐬](https://t.me/YourSupportChannel) 🌷", 
+            parse_mode=ParseMode.MARKDOWN
+        )
     if is_v:
         v.delete_one({"chat_id": message.chat.id})
-        await message.reply_text(f"💥 𝐕 𝐂𝐡𝐚𝐭𝐛𝐨𝐭 𝐈𝐬 𝐄𝐧𝐚𝐛𝐥𝐞𝐝 🌷!\n\n𝐀𝐧𝐲 𝐏𝐫𝐨𝐛𝐥𝐞𝐦 𝐓𝐨 [𝐑𝐞𝐩𝐨𝐫𝐭]{SUPPORT_GROUP}  🥀\n\n[𝐔𝐩𝐝𝐚𝐭𝐞𝐬]{SUPPORT_CHANNEL} 🌷", parse_mode=ParseMode.MARKDOWN)
-    
+        await message.reply_text(
+            f"💥 𝐕 𝐂𝐡𝐚𝐭𝐛𝐨𝐭 𝐈𝐬 𝐄𝐧𝐚𝐛𝐥𝐞𝐝 🌷!\n\n𝐀𝐧𝐲 𝐏𝐫𝐨𝐛𝐥𝐞𝐦 𝐓𝐨 [𝐑𝐞𝐩𝐨𝐫𝐭](https://t.me/YourSupportGroup) 🥀\n\n[𝐔𝐩𝐝𝐚𝐭𝐞𝐬](https://t.me/YourSupportChannel) 🌷", 
+            parse_mode=ParseMode.MARKDOWN
+        )
+
 
 @bot.on_message(
-    filters.command("chatbot", prefixes=["/", ".", "?", "-"])
+    filters.command("chatbot", prefixes=["/", ".", "?", "-"]) 
     & ~filters.private)
 async def chatbot(client, message):
-    await message.reply_text(f"**🇮🇳 𝐔𝐬𝐚𝐠𝐞 🌷 :**\n/chatbot [on|off] 𝐎𝐧𝐥𝐲 𝐆𝐫𝐨𝐮𝐩 🇮🇳 !\n\n𝐀𝐧𝐲 𝐏𝐫𝐨𝐛𝐥𝐞𝐦 𝐓𝐨 [𝐑𝐞𝐩𝐨𝐫𝐭]{SUPPORT_GROUP}  🥀\n\n[𝐔𝐩𝐝𝐚𝐭𝐞𝐬]{SUPPORT_CHANNEL} 🌷", parse_mode=ParseMode.MARKDOWN)
-
+    await message.reply_text(
+        f"**🇮🇳 𝐔𝐬𝐚𝐠𝐞 🌷 :**\n/chatbot [on|off] 𝐎𝐧𝐥𝐲 𝐆𝐫𝐨𝐮𝐩 🇮🇳 !\n\n𝐀𝐧𝐲 𝐏𝐫𝐨𝐛𝐥𝐞𝐦 𝐓𝐨 [𝐑𝐞𝐩𝐨𝐫𝐭](https://t.me/YourSupportGroup) 🥀\n\n[𝐔𝐩𝐝𝐚𝐭𝐞𝐬](https://t.me/YourSupportChannel) 🌷", 
+        parse_mode=ParseMode.MARKDOWN
+    )
 
 @bot.on_message(
  (
