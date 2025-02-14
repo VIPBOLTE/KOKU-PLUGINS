@@ -11,4 +11,4 @@ nekos.py
 telegraph
 uuid
 git+https://github.com/TheChampu/TheAPI
-git+https://github.com/TheChampu/ChampuAPI
+git+https://github.com/VIPBOLTE/KOKU_API
