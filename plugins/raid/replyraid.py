@@ -26,11 +26,18 @@ async def raid_assistant(client: Client, message: Message):
     try:
         # Parsing the command arguments
         args = message.text.split()
+        
         if len(args) < 3:
             await message.reply_text("**Usage:**\n`!raid [count] [username]`")
             return
-
-        count = int(args[1])
+        
+        # Safely convert count to int and handle invalid input
+        try:
+            count = int(args[1])
+        except ValueError:
+            await message.reply_text("**Error:** The [count] parameter must be an integer.")
+            return
+        
         target = args[2]
 
         # Start the raid
@@ -53,4 +60,3 @@ async def raid_assistant(client: Client, message: Message):
     except Exception as e:
         # Catch any general exception and send a reply
         await message.reply_text(f"❌ Error: {str(e)}")
-
