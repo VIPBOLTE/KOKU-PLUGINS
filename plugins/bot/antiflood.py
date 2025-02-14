@@ -1,5 +1,5 @@
-from ChampuMusic import app
-from ChampuMusic.core.mongo import mongodb
+from KOKUMUSIC import app
+from KOKUMUSIC.core.mongo import mongodb
 from pyrogram import filters
 from pyrogram.types import Message
 from datetime import datetime, timedelta
