@@ -70,7 +70,6 @@ async def add_fuck_raid(client, message):
 
 
 @app.on_message(cdx(["dfr", "drr", "drraid", "dfuckraid"]))
-@sudo_users_only
 async def del_fuck_raid(client, message):
     try:
         aux = await eor(message, "**🔄 Processing ...**")
