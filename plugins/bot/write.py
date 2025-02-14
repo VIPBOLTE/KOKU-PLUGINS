@@ -1,3 +1,4 @@
+"""
 from pyrogram import filters
 from KOKUAPI import api
 
@@ -36,3 +37,4 @@ __HELP__ = """
 
 **NOTE**:
 - ᴜsᴇ ᴅɪʀᴇᴄᴛʟʏ ɪɴ ᴀ ɢʀᴏᴜᴘ ᴄʜᴀᴛ ᴡɪᴛʜ ᴍᴇ ғᴏʀ ᴛʜᴇ ʙᴇsᴛ ʀᴇsᴜʟᴛs."""
+"""
