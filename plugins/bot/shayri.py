@@ -1,5 +1,5 @@
 import random
-from ChampuMusic.utils.database import get_served_chats
+from KOKUMUSIC.utils.database import get_served_chats
 from pyrogram import Client, filters
 import config
 from KOKUMUSIC import app
@@ -120,8 +120,8 @@ from pyrogram import filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import random
 
-from ChampuMusic import app
-
+from KOKUMUSIC import app
+from config import LOGGER_ID
 # Define the scheduler
 scheduler = AsyncIOScheduler(timezone="Asia/Kolkata")
 
@@ -154,7 +154,7 @@ async def send_good_night():
         return
     for chat_id in chats:
         try:
-            if chat_id == -1001423108989:
+            if chat_id == LOGGER_ID:
                 continue
             shayari = random.choice(night_shayari)
             await app.send_photo(
@@ -178,7 +178,7 @@ async def send_good_morning():
         return
     for chat_id in chats:
         try:
-            if chat_id == -1001423108989:
+            if chat_id == LOGGER_ID:
                 continue
             shayari = random.choice(morning_shayari)
             await app.send_photo(
