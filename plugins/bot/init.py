@@ -1,8 +1,8 @@
 import asyncio
 
 import config
-from ChampuMusic import app
-from ChampuMusic.utils.database import get_assistant
+from KOKUMUSIC import app
+from KOKUMUSIC.utils.database import get_assistant
 
 AUTO = True
 
