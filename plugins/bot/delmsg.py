@@ -1,11 +1,11 @@
-from ChampuMusic import app
+from KOKUMUSIC import app
 from pyrogram import filters, Client
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, ChatPrivileges
-from ChampuMusic.misc import SUDOERS
+from KOKUMUSIC.misc import SUDOERS
 from pyrogram.errors import UserNotParticipant
 from utils.permissions import adminsOnly, member_permissions
 from config import BANNED_USERS
-from ChampuMusic.utils.database import get_assistant
+from KOKUMUSIC.utils.database import get_assistant
 
 async def is_admin_or_sudo(client, chat_id, user_id):
     if user_id in SUDOERS:
