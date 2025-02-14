@@ -3,8 +3,8 @@ import time
 import pyrogram
 from pyrogram import filters
 
-from ChampuMusic import app
-from ChampuMusic.misc import SUDOERS
+from KOKUMUSIC import app
+from KOKUMUSIC.misc import SUDOERS
 
 
 # Define the spam command handler
