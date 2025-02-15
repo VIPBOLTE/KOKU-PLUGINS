@@ -10,7 +10,7 @@ from typing import Callable
 from pyrogram.enums import ChatMemberStatus, ChatMemberStatus
 from pyrogram.types import Message
 from pyrogram.errors import UserNotParticipant
-from KOKUMUSIC.utils.decorators.admins import admincheck
+from KOKUMUSIC.utils.decorators.admins import AdminRightsCheck
 
 def is_admins(func: Callable) -> Callable:
     async def non_admin(c: app, m: Message):
@@ -70,7 +70,7 @@ async def cb_handler(_, query: CallbackQuery):
                 await query.edit_message_text("**ᴄʜᴀᴛ-ʙᴏᴛ ᴀʟʀᴇᴀᴅʏ ᴅɪsᴀʙʟᴇᴅ.**")
 
 @app.on_message(filters.command("chatbot") & filters.group)
-@admincheck
+@AdminRightsCheck
 async def chaton_(client: Client, message: Message):
     # Inline keyboard for enabling/disabling chatbot
     CHATBOT_ON = [
