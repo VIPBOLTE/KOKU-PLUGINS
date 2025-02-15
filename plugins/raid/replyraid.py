@@ -90,7 +90,7 @@ eor = edit_or_reply
 from pyrogram import filters
 from typing import Union, List
 
-COMMAND_PREFIXES = list(getenv("COMMAND_PREFIXES", ". !").split())
+COMMAND_PREFIXES = list(("COMMAND_PREFIXES", ". !").split())
 
 def commandx(commands: Union[str, List[str]]):
     return filters.command(commands, COMMAND_PREFIXES)
