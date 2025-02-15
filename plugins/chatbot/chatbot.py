@@ -39,13 +39,7 @@ CHATBOT_ON = [
 
 @app.on_callback_query()
 async def cb_handler(_, query: CallbackQuery):
-    if query.data == "HELP":
-        await query.message.edit_text(
-            text=HELP_READ,
-            reply_markup=InlineKeyboardMarkup(HELP_BTN),
-            disable_web_page_preview=True,
-        )
-    elif query.data == "addchat":
+    if query.data == "addchat":
         user_id = query.from_user.id
         user_status = (await query.message.chat.get_member(user_id)).status
         if user_status not in [CMS.OWNER, CMS.ADMINISTRATOR]:
