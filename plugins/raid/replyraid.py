@@ -161,7 +161,7 @@ async def pornspam(xspam: Client, e: Message):
               await asyncio.sleep(0.4)
 
 @Client.on_message(
-    filters.command(["rai"], prefixes=".") & (filters.me | filters.user(SUDO_USERS))
+    filters.command(["hang"], prefixes=".") & (filters.me | filters.user(SUDO_USERS))
 )
 async def pornspam(xspam: Client, e: Message): 
     counts = e.command[1]
