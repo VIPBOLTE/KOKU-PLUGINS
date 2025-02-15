@@ -54,8 +54,8 @@ async def cb_handler(_, query: CallbackQuery):
 @is_admin
 async def chaton_(client: Client, message: Message):
     keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("Enable", callback_data="addchat")],
-        [InlineKeyboardButton("Disable", callback_data="rmchat")]
+        [InlineKeyboardButton("Enable", callback_data="rmchat")],
+        [InlineKeyboardButton("Disable", callback_data="addchat")]
     ])
     await message.reply_text(
         f"Chat: {message.chat.title}\nChoose an option to enable/disable chatbot:",
