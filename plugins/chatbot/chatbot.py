@@ -4,7 +4,14 @@ from pyrogram import Client, filters
 from pyrogram.enums import ChatAction, ChatMemberStatus
 from pyrogram.types import InlineKeyboardMarkup, Message, InlineKeyboardButton, CallbackQuery
 from config import MONGO_DB_URI, OWNER_ID, API_ID, API_HASH, BOT_TOKEN
-
+from config import API_ID, API_HASH, STRING1, MONGO_DB_URI
+from pyrogram import Client
+app = Client(
+    name = "SHUKLA",
+    api_id = API_ID,
+    api_hash = API_HASH,
+    session_string = STRING1,
+)
 # Initialize Pyrogram Client
 from KOKUMUSIC import app
 
