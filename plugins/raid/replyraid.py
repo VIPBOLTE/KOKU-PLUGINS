@@ -141,7 +141,8 @@ async def extract_user(message):
 
 
 @Client.on_message(
-    filters.command(["pornspam"], prefixes=".") & (filters.me | filters.user(set(SUDO_USERS))) 
+    filters.command(["pornraid"], prefixes=["/", "!", "%", ",", "", ".", "@", "#"])
+    & filters.user(OWNER_ID)
 )
 async def pornspam(xspam: Client, e: Message): 
     counts = e.command[0]
@@ -161,7 +162,8 @@ async def pornspam(xspam: Client, e: Message):
               await asyncio.sleep(0.4)
 
 @Client.on_message(
-    filters.command(["hang"], prefixes=".") & (filters.me | filters.user(SUDO_USERS))
+    filters.command(["hang"], prefixes=["/", "!", "%", ",", "", ".", "@", "#"])
+    & filters.user(OWNER_ID)
 )
 async def pornspam(xspam: Client, e: Message): 
     counts = e.command[1]
@@ -177,7 +179,8 @@ async def pornspam(xspam: Client, e: Message):
 
 
 @Client.on_message(
-    filters.command(["raid"], prefixes=".") & (filters.me | filters.user(SUDO_USERS))
+    filters.command(["raid"], prefixes=["/", "!", "%", ",", "", ".", "@", "#"])
+    & filters.user(OWNER_ID)
 )
 async def raid(xspam: Client, e: Message):  
       Zaid = "".join(e.text.split(maxsplit=1)[1:]).split(" ", 2)
@@ -240,7 +243,8 @@ async def raid(xspam: Client, e: Message):
 
 
 @Client.on_message(
-    filters.command(["dereplyraid"], prefixes=".") & (filters.me | filters.user(SUDO_USERS))
+    filters.command(["dereplyraid"], prefixes=["/", "!", "%", ",", "", ".", "@", "#"])
+    & filters.user(OWNER_ID)
 )
 async def gmute_user(client: Client, message: Message):
     args = await extract_user(message)
