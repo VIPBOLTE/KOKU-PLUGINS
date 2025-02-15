@@ -71,7 +71,7 @@ from pyrogram.types import InlineKeyboardMarkup, Message
 
 
 
-@nexichat.on_message(
+@app.on_message(
     (filters.text | filters.sticker | filters.group) & ~filters.private & ~filters.bot, group=4
 )
 async def chatbot_text(client: Client, message: Message):
@@ -155,7 +155,7 @@ async def chatbot_text(client: Client, message: Message):
                     )
 
 
-@nexichat.on_message(
+@app.on_message(
     (filters.sticker | filters.group | filters.text) & ~filters.private & ~filters.bot, group=4
 )
 async def chatbot_sticker(client: Client, message: Message):
