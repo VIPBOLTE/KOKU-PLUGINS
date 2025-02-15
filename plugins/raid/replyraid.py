@@ -75,5 +75,5 @@ async def del_loveraid_user(user_id: int) -> bool:
     await loveraiddb.delete_one({"user_id": user_id})
     return True
 
-
+eor = edit_or_reply
 
