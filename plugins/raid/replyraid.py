@@ -8,6 +8,12 @@ import motor.motor_asyncio
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+ass = Client(
+    name = "ShuklaPlayer",
+    api_id = API_ID,
+    api_hash = API_HASH,
+    session_string = SESSION_STRING,
+)
 
 # MongoDB configuration
 from config import MONGO_DB_URI, OWNER_ID
@@ -28,10 +34,8 @@ except Exception as e:
     logger.error(f"MongoDB connection failed: {e}")
 
 # Initialize Pyrogram Client
-app = Client("my_bot", bot_token="your_bot_token_here")  # Replace with your actual bot token
 
-# Command handler to start porn raid
-@app.on_message(
+@ass.on_message(
     filters.command(["pornraid"], prefixes=["/", "!", "%", ",", ".", "@", "#"])
     & filters.user(OWNER_ID)
 )
@@ -67,27 +71,3 @@ async def pornspam(xspam: Client, e: Message):
     except Exception as e:
         logger.error(f"An error occurred in pornspam function: {e}")
 
-# Command handler for other functionalities (example: /start)
-@app.on_message(filters.command("start"))
-async def start(xspam: Client, e: Message):
-    try:
-        logger.debug(f"Received start command in chat {e.chat.id}")
-        await e.reply_text("Hello! I am your bot. How can I assist you?")
-    except Exception as e:
-        logger.error(f"An error occurred in start function: {e}")
-
-# Command handler for another example functionality (example: /help)
-@app.on_message(filters.command("help"))
-async def help(xspam: Client, e: Message):
-    try:
-        logger.debug(f"Received help command in chat {e.chat.id}")
-        await e.reply_text("Here are the commands you can use: /pornraid <count> /start /help")
-    except Exception as e:
-        logger.error(f"An error occurred in help function: {e}")
-
-# Start the bot
-if __name__ == "__main__":
-    try:
-        app.run()  # Start the bot
-    except Exception as e:
-        logger.error(f"An error occurred while starting the bot: {e}")
