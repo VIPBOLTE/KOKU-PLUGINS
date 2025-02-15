@@ -15,10 +15,9 @@ from pyrogram.types import Message
 from utils.data import *
 from pyrogram import Client, errors, filters
 from pyrogram.types import ChatPermissions, Message
-DEVS = int(6762113050)
+
 cli = MongoClient(MONGO_DB_URI)
 
-SUDO_USERS = [OWNER_ID]
 RAIDS = []
 async def get_ub_chats(
     client: Client,
