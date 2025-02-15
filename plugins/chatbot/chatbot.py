@@ -69,22 +69,9 @@ async def cb_handler(_, query: CallbackQuery):
             if is_DAXX:
                 await query.edit_message_text("**ᴄʜᴀᴛ-ʙᴏᴛ ᴀʟʀᴇᴀᴅʏ ᴅɪsᴀʙʟᴇᴅ.**")
 
-# Assuming 'app' is your Pyrogram Client instance
 @app.on_message(filters.command("chatbot") & filters.group)
-async def chaton_(_, m: Message):
-    try:
-        # Check if the user is an admin
-        chat_member = await _.get_chat_member(m.chat.id, m.from_user.id)
-        if chat_member.status not in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.CREATOR]:
-            await m.reply_text("You must be an admin to use this command.")
-            return
-    except UserNotParticipant:
-        await m.reply_text("You are not a participant of this chat.")
-        return
-    except Exception as e:
-        await m.reply_text(f"An error occurred: {e}")
-        return
-
+@admincheck
+async def chaton_(client: Client, message: Message):
     # Inline keyboard for enabling/disabling chatbot
     CHATBOT_ON = [
         [
@@ -93,9 +80,8 @@ async def chaton_(_, m: Message):
         ]
     ]
 
-    # If the user is an admin, proceed with the chatbot functionality
-    await m.reply_text(
-        f"ᴄʜᴀᴛ: {m.chat.title}\n**ᴄʜᴏᴏsᴇ ᴀɴ ᴏᴩᴛɪᴏɴ ᴛᴏ ᴇɴᴀʙʟᴇ/ᴅɪsᴀʙʟᴇ ᴄʜᴀᴛʙᴏᴛ.**",
+    await message.reply_text(
+        f"ᴄʜᴀᴛ: {message.chat.title}\n**ᴄʜᴏᴏsᴇ ᴀɴ ᴏᴩᴛɪᴏɴ ᴛᴏ ᴇɴᴀʙʟᴇ/ᴅɪsᴀʙʟᴇ ᴄʜᴀᴛʙᴏᴛ.**",
         reply_markup=InlineKeyboardMarkup(CHATBOT_ON),
     )
 
