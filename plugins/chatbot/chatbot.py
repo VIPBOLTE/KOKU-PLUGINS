@@ -10,7 +10,7 @@ from typing import Callable
 from pyrogram.enums import ChatMemberStatus, ChatMemberStatus
 from pyrogram.types import Message
 from pyrogram.errors import UserNotParticipant
-
+from KOKUMUSIC.utils.decorators.admins import admincheck
 
 def is_admins(func: Callable) -> Callable:
     async def non_admin(c: app, m: Message):
