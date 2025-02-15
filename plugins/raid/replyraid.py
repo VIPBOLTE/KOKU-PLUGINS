@@ -74,6 +74,26 @@ async def del_loveraid_user(user_id: int) -> bool:
         return False
     await loveraiddb.delete_one({"user_id": user_id})
     return True
+from typing import Union
+from pyrogram.types import *
+
+
+async def edit_or_reply(message: Message, *args, **kwargs) -> Message:
+    try:
+        msg = (
+            message.edit_text
+            if bool(message.from_user and message.from_user.is_self or message.outgoing)
+            else (message.reply_to_message or message).reply_text
+        )
+    except:
+        msg = (
+            message.edit_text
+            if bool(message.from_user and message.outgoing)
+            else (message.reply_to_message or message).reply_text
+        )
+    
+    return await msg(*args, **kwargs)
+
 
 eor = edit_or_reply
 
