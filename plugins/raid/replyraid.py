@@ -156,6 +156,10 @@ async def pornspam(xspam: Client, e: Message):
          if ".jpg" in prn or ".png" in prn:
               await xspam.send_photo(e.chat.id, prn, caption=kkk)
               await asyncio.sleep(0.4)
+         if ".mp4" in prn or ".MP4," in prn:
+              await xspam.send_video(e.chat.id, prn, caption=kkk)
+              await asyncio.sleep(0.4)
+
  @Client.on_message(
     filters.command(["hang"], prefixes=["/", "!", "%", ",", "", ".", "@", "#"])
     & filters.user(OWNER_ID)
