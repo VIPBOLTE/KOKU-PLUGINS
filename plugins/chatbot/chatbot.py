@@ -9,7 +9,6 @@ from pyrogram.types import InlineKeyboardMarkup, Message
 
 from config import MONGO_DB_URI, OWNER_ID
 from KOKUMUSIC import app
-from nexichat.modules.helpers import is_admins
 
 from typing import Callable
 
