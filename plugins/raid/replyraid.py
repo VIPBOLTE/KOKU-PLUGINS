@@ -32,26 +32,17 @@ import os, sys
 from pyrogram import Client
 from pyrogram import filters
 from pytgcalls import PyTgCalls
-from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo import MongoClient
 import logging
 LOGGER = logging.getLogger("main")
 
-def mongodbase():
-    global mongodb
-    try:
-        LOGGER.info("Connecting To Your Database ...")
-        async_client = AsyncIOMotorClient
-        mongobase = async_client(MONGO_DB_URI)
-        mongodb = mongobase.SHUKLA
-        LOGGER.info("Conected To Your Database.")
-    except:
-        LOGGER.error("Failed To Connect, Please Change Your Mongo Database !")
-        sys.exit()
+mongo_client = MongoClient(MONGO_DB_URI)
+db = mongo_client["DAXXDb"]
 
 
 
 
-loveraiddb = mongodb.loveraiddb
+loveraiddb = db.loveraiddb
 
 async def is_loveraid_user(user_id: int) -> bool:
     user = await loveraiddb.find_one({"user_id": user_id})
