@@ -8,7 +8,6 @@ from config import MONGO_DB_URI, OWNER_ID
 from KOKUMUSIC import app
 from typing import Callable
 from pyrogram.enums import ChatMemberStatus, ChatMemberStatus
-from pyrogram.types import Message
 from pyrogram.errors import UserNotParticipant
 from KOKUMUSIC.utils.decorators.admins import AdminRightsCheck
 
@@ -69,7 +68,7 @@ async def cb_handler(_, query: CallbackQuery):
             if is_DAXX:
                 await query.edit_message_text("**ᴄʜᴀᴛ-ʙᴏᴛ ᴀʟʀᴇᴀᴅʏ ᴅɪsᴀʙʟᴇᴅ.**")
 
-@app.on_message(filters.command("chatbot") & filters.group)
+@app.on_message(filters.command("chatb") & filters.group)
 @AdminRightsCheck
 async def chaton_(client: Client, message: Message):
     # Inline keyboard for enabling/disabling chatbot
