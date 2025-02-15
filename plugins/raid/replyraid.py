@@ -96,5 +96,11 @@ async def edit_or_reply(message: Message, *args, **kwargs) -> Message:
 
 
 eor = edit_or_reply
+from pyrogram import filters
+from typing import Union, List
 
+COMMAND_PREFIXES = list(getenv("COMMAND_PREFIXES", ". !").split())
+
+def commandx(commands: Union[str, List[str]]):
+    return filters.command(commands, COMMAND_PREFIXES)
 cdx = commandx
