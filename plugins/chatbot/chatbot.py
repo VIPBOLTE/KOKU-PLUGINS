@@ -7,7 +7,7 @@ from pyrogram import Client, filters
 from pyrogram.enums import ChatAction
 from pyrogram.types import InlineKeyboardMarkup, Message
 
-from config import MONGO_URL
+from config import MONGO_DB_URI
 from nexichat import nexichat
 from nexichat.modules.helpers import CHATBOT_ON, is_admins
 
@@ -37,11 +37,11 @@ async def chatbot_text(client: Client, message: Message):
             return
     except Exception:
         pass
-    chatdb = MongoClient(MONGO_URL)
+    chatdb = MongoClient(MONGO_DB_URI)
     chatai = chatdb["Word"]["WordDb"]
 
     if not message.reply_to_message:
-        DAXXdb = MongoClient(MONGO_URL)
+        DAXXdb = MongoClient(MONGO_DB_URI)
         DAXX = DAXXdb["DAXXDb"]["DAXX"]
         is_DAXX = DAXX.find_one({"chat_id": message.chat.id})
         if not is_DAXX:
@@ -61,7 +61,7 @@ async def chatbot_text(client: Client, message: Message):
                     await message.reply_text(f"{hey}")
 
     if message.reply_to_message:
-        DAXXdb = MongoClient(MONGO_URL)
+        DAXXdb = MongoClient(MONGO_DB_URI)
         DAXX = DAXXdb["DAXXDb"]["DAXX"]
         is_DAXX = DAXX.find_one({"chat_id": message.chat.id})
         if message.reply_to_message.from_user.id == client.id:
@@ -126,11 +126,11 @@ async def chatbot_sticker(client: Client, message: Message):
             return
     except Exception:
         pass
-    chatdb = MongoClient(MONGO_URL)
+    chatdb = MongoClient(MONGO_DB_URI)
     chatai = chatdb["Word"]["WordDb"]
 
     if not message.reply_to_message:
-        DAXXdb = MongoClient(MONGO_URL)
+        DAXXdb = MongoClient(MONGO_DB_URI)
         DAXX = DAXXdb["DAXXDb"]["DAXX"]
         is_DAXX = DAXX.find_one({"chat_id": message.chat.id})
         if not is_DAXX:
@@ -150,7 +150,7 @@ async def chatbot_sticker(client: Client, message: Message):
                     await message.reply_sticker(f"{hey}")
 
     if message.reply_to_message:
-        DAXXdb = MongoClient(MONGO_URL)
+        DAXXdb = MongoClient(MONGO_DB_URI)
         DAXX = DAXXdb["DAXXDb"]["DAXX"]
         is_DAXX = DAXX.find_one({"chat_id": message.chat.id})
         if message.reply_to_message.from_user.id == Client.id:
@@ -217,7 +217,7 @@ async def chatbot_pvt(client: Client, message: Message):
             return
     except Exception:
         pass
-    chatdb = MongoClient(MONGO_URL)
+    chatdb = MongoClient(MONGO_DB_URI)
     chatai = chatdb["Word"]["WordDb"]
     if not message.reply_to_message:
         await client.send_chat_action(message.chat.id, ChatAction.TYPING)
@@ -266,7 +266,7 @@ async def chatbot_sticker_pvt(client: Client, message: Message):
             return
     except Exception:
         pass
-    chatdb = MongoClient(MONGO_URL)
+    chatdb = MongoClient(MONGO_DB_URI)
     chatai = chatdb["Word"]["WordDb"]
     if not message.reply_to_message:
         await client.send_chat_action(message.chat.id, ChatAction.TYPING)
