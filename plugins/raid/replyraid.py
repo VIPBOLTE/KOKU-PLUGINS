@@ -1,7 +1,6 @@
 import asyncio
 from pyrogram import filters, Client
 from Zaid.modules.help import *
-from Zaid.helper.utility import get_arg
 from pyrogram.types import *
 from pyrogram import __version__
 import os
@@ -22,6 +21,14 @@ from Zaid.helper.PyroHelpers import get_ub_chats
 SUDO_USERS = SUDO_USER
 RAIDS = []
 
+def get_arg(message):
+    msg = message.text
+    msg = msg.replace(" ", "", 1) if msg[1] == " " else msg
+    split = msg[1:].replace("\n", " \n").split(" ")
+    if " ".join(split[1:]).strip() == "":
+        return ""
+    return " ".join(split[1:])
+    
 async def extract_userid(message, text: str):
     return None
 
