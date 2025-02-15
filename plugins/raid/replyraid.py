@@ -7,6 +7,7 @@ app = Client(
     session_string = STRING1,
 )
 from pyrogram.types import *
+from KOKUMUSIC.misc import SUDOERS
 def sudo_users_only(mystic):
     async def wrapper(client, message):
         try:
