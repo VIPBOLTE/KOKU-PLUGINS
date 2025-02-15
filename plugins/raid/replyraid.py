@@ -18,7 +18,8 @@ from pyrogram import Client
 from pyrogram import filters
 from pytgcalls import PyTgCalls
 from motor.motor_asyncio import AsyncIOMotorClient
-
+import logging
+LOGGER = logging.getLogger("main")
 
 def mongodbase():
     global mongodb
