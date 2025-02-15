@@ -7,7 +7,21 @@ app = Client(
     session_string = STRING1,
 )
 
-
+def sudo_users_only(mystic):
+    async def wrapper(client, message):
+        try:
+            if (message.from_user.is_self or
+               message.from_user.id in SUDOERS
+            ):
+                return await mystic(client, message)
+        except:
+            if (message.outgoing or
+               message.from_user.id in SUDOERS
+            ):
+                return await mystic(client, message)
+            
+    return wrapper
+    
 
 from typing import Dict, List, Union
 
