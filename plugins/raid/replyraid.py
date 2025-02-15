@@ -11,7 +11,11 @@ from utils.data import *
 from pyrogram import Client, errors, filters
 from pyrogram.types import ChatPermissions, Message
 
-cli = MongoClient(MONGO_DB_URI)
+import motor.motor_asyncio
+
+from config import MONGO_DB_URI
+cli = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DB_URI)
+
 
 RAIDS = []
 async def get_ub_chats(
