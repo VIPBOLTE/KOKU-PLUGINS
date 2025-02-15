@@ -73,12 +73,12 @@ async def cb_handler(_, query: CallbackQuery):
 @AdminRightsCheck
 async def chaton_(client: Client, message: Message):
     # Inline keyboard for enabling/disabling chatbot
-CHATBOT_ON = [
-    [
-        InlineKeyboardButton(text="ᴇɴᴀʙʟᴇ", callback_data=f"addchat"),
-        InlineKeyboardButton(text="ᴅɪsᴀʙʟᴇ", callback_data=f"rmchat"),
-    ],
-]
+    CHATBOT_ON = [
+        [
+            InlineKeyboardButton(text="ᴇɴᴀʙʟᴇ", callback_data=f"addchat"),
+            InlineKeyboardButton(text="ᴅɪsᴀʙʟᴇ", callback_data=f"rmchat"),
+        ],
+    ]
 
     await message.reply_text(
         f"ᴄʜᴀᴛ: {message.chat.title}\n**ᴄʜᴏᴏsᴇ ᴀɴ ᴏᴩᴛɪᴏɴ ᴛᴏ ᴇɴᴀʙʟᴇ/ᴅɪsᴀʙʟᴇ ᴄʜᴀᴛʙᴏᴛ.**",
