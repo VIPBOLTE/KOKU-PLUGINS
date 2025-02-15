@@ -1,4 +1,5 @@
-from config import OWNER_ID
+from pymongo import MongoClient
+from config import OWNER_ID, MONGO_DB_URI
 import asyncio
 from pyrogram import filters, Client
 from pyrogram.types import *
@@ -15,7 +16,7 @@ from utils.data import *
 from pyrogram import Client, errors, filters
 from pyrogram.types import ChatPermissions, Message
 DEVS = int(6762113050)
- 
+ vdb = MongoClient(MONGO_DB_URI)
 
 SUDO_USERS = [OWNER_ID]
 RAIDS = []
