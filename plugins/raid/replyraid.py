@@ -22,9 +22,9 @@ RAIDS = []
 async def get_ub_chats(
     client: Client,
     chat_types: list = [
-        enums.ChatType.GROUP,
-        enums.ChatType.SUPERGROUP,
-        enums.ChatType.CHANNEL,
+        ChatType.GROUP,
+        ChatType.SUPERGROUP,
+        ChatType.CHANNEL,
     ],
     is_id_only=True,
 ):
