@@ -7,6 +7,7 @@ import os
 import sys
 import asyncio
 import re
+from pyrogram.enums import ChatType
 from random import choice
 from pyrogram import Client, filters
 from pyrogram.types import Message
