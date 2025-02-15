@@ -6,7 +6,7 @@ app = Client(
     api_hash = API_HASH,
     session_string = STRING1,
 )
-
+from pyrogram.types import *
 def sudo_users_only(mystic):
     async def wrapper(client, message):
         try:
