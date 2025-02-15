@@ -37,6 +37,49 @@ CHATBOT_ON = [
     ],
 ]
 
+@app.on_callback_query()
+async def cb_handler(_, query: CallbackQuery):
+    if query.data == "HELP":
+        await query.message.edit_text(
+            text=HELP_READ,
+            reply_markup=InlineKeyboardMarkup(HELP_BTN),
+            disable_web_page_preview=True,
+        )
+    elif query.data == "addchat":
+        user_id = query.from_user.id
+        user_status = (await query.message.chat.get_member(user_id)).status
+        if user_status not in [CMS.OWNER, CMS.ADMINISTRATOR]:
+            return await query.answer(
+                "ʏᴏᴜ'ʀᴇ ɴᴏᴛ ᴇᴠᴇɴ ᴀɴ ᴀᴅᴍɪɴ, ᴅᴏɴ'ᴛ ᴛʀʏ ᴛʜɪs ᴇxᴘʟᴏsɪᴠᴇ sʜɪᴛ!",
+                show_alert=True,
+            )
+        else:
+            is_DAXX = DAXX.find_one({"chat_id": query.message.chat.id})
+            if not is_DAXX:
+                await query.edit_message_text(f"**ᴄʜᴀᴛ-ʙᴏᴛ ᴀʟʀᴇᴀᴅʏ ᴇɴᴀʙʟᴇᴅ.**")
+            if is_DAXX:
+                DAXX.delete_one({"chat_id": query.message.chat.id})
+                await query.edit_message_text(
+                    f"**ᴄʜᴀᴛ-ʙᴏᴛ ᴇɴᴀʙʟᴇᴅ ʙʏ** {query.from_user.mention}."
+                )
+    elif query.data == "rmchat":
+        user_id = query.from_user.id
+        user_status = (await query.message.chat.get_member(user_id)).status
+        if user_status not in [CMS.OWNER, CMS.ADMINISTRATOR]:
+            await query.answer(
+                "ʏᴏᴜ'ʀᴇ ɴᴏᴛ ᴇᴠᴇɴ ᴀɴ ᴀᴅᴍɪɴ, ᴅᴏɴ'ᴛ ᴛʀʏ ᴛʜɪs ᴇxᴘʟᴏsɪᴠᴇ sʜɪᴛ!",
+                show_alert=True,
+            )
+            return
+        else:
+            is_DAXX = DAXX.find_one({"chat_id": query.message.chat.id})
+            if not is_DAXX:
+                DAXX.insert_one({"chat_id": query.message.chat.id})
+                await query.edit_message_text(
+                    f"**ᴄʜᴀᴛ-ʙᴏᴛ ᴅɪsᴀʙʟᴇᴅ ʙʏ** {query.from_user.mention}."
+                )
+            if is_DAXX:
+                await query.edit_message_text("**ᴄʜᴀᴛ-ʙᴏᴛ ᴀʟʀᴇᴀᴅʏ ᴅɪsᴀʙʟᴇᴅ.**")
 @app.on_cmd("chatbot", group_only=True)
 @adminsOnly("can_delete_messages")
 async def chaton_(_, m: Message):
