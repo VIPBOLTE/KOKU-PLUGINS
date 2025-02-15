@@ -97,3 +97,4 @@ async def edit_or_reply(message: Message, *args, **kwargs) -> Message:
 
 eor = edit_or_reply
 
+cdx = commandx
