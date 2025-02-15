@@ -10,7 +10,6 @@ from random import choice
 from pyrogram import Client, filters
 from pyrogram.types import Message
 from cache.data import *
-from Zaid.database.rraid import *
 from pyrogram import Client, errors, filters
 from pyrogram.types import ChatPermissions, Message
 DEVS = int(6762113050)
