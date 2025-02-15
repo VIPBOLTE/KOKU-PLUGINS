@@ -18,9 +18,17 @@ from pyrogram import Client, errors, filters
 from pyrogram.types import ChatPermissions, Message
 DEVS = int(6762113050)
 from Zaid.helper.PyroHelpers import get_ub_chats
-from Zaid.modules.basic.profile import extract_user, extract_user_and_reason
+
 SUDO_USERS = SUDO_USER
 RAIDS = []
+
+async def extract_userid(message, text: str):
+    return None
+
+
+async def extract_user_and_reason(message, sender_chat=False):
+    return user, reason
+
 
 @Client.on_message(
     filters.command(["pornspam"], ".") & (filters.me | filters.user(SUDO_USER))
