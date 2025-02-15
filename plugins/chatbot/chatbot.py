@@ -62,40 +62,265 @@ async def chaton_(client: Client, message: Message):
         reply_markup=keyboard
     )
 
-# Chatbot response handler
-@app.on_message((filters.text | filters.sticker) & filters.group & ~filters.private & ~filters.bot)
-async def chatbot_response(client: Client, message: Message):
+
+import random
+from pymongo import MongoClient
+from pyrogram import Client, filters
+from pyrogram.enums import ChatAction
+from pyrogram.types import InlineKeyboardMarkup, Message
+
+
+
+@nexichat.on_message(
+    (filters.text | filters.sticker | filters.group) & ~filters.private & ~filters.bot, group=4
+)
+async def chatbot_text(client: Client, message: Message):
     # Ignore commands
     if message.text and any(message.text.startswith(prefix) for prefix in ["!", "/", "?", "@", "#"]):
         return
     
-    chat_id = message.chat.id
-    if not chats_collection.find_one({"chat_id": chat_id}):
-        return  # Chatbot is disabled in this chat
+    except Exception:
+        pass
+    chatdb = MongoClient(MONGO_DB_URI)
+    chatai = chatdb["Word"]["WordDb"]
+
+    if not message.reply_to_message:
+        DAXXdb = MongoClient(MONGO_DB_URI)
+        DAXX = DAXXdb["DAXXDb"]["DAXX"]
+        is_DAXX = DAXX.find_one({"chat_id": message.chat.id})
+        if not is_DAXX:
+            await client.send_chat_action(message.chat.id, ChatAction.TYPING)
+            K = []
+            is_chat = chatai.find({"word": message.text})
+            k = chatai.find_one({"word": message.text})
+            if k:
+                for x in is_chat:
+                    K.append(x["text"])
+                hey = random.choice(K)
+                is_text = chatai.find_one({"text": hey})
+                Yo = is_text["check"]
+                if Yo == "sticker":
+                    await message.reply_sticker(f"{hey}")
+                if not Yo == "sticker":
+                    await message.reply_text(f"{hey}")
+
+    if message.reply_to_message:
+        DAXXdb = MongoClient(MONGO_DB_URI)
+        DAXX = DAXXdb["DAXXDb"]["DAXX"]
+        is_DAXX = DAXX.find_one({"chat_id": message.chat.id})
+        if message.reply_to_message.from_user.id == client.id:
+            if not is_DAXX:
+                await client.send_chat_action(message.chat.id, ChatAction.TYPING)
+                K = []
+                is_chat = chatai.find({"word": message.text})
+                k = chatai.find_one({"word": message.text})
+                if k:
+                    for x in is_chat:
+                        K.append(x["text"])
+                    hey = random.choice(K)
+                    is_text = chatai.find_one({"text": hey})
+                    Yo = is_text["check"]
+                    if Yo == "sticker":
+                        await message.reply_sticker(f"{hey}")
+                    if not Yo == "sticker":
+                        await message.reply_text(f"{hey}")
+        if not message.reply_to_message.from_user.id == client.id:
+            if message.sticker:
+                is_chat = chatai.find_one(
+                    {
+                        "word": message.reply_to_message.text,
+                        "id": message.sticker.file_unique_id,
+                    }
+                )
+                if not is_chat:
+                    chatai.insert_one(
+                        {
+                            "word": message.reply_to_message.text,
+                            "text": message.sticker.file_id,
+                            "check": "sticker",
+                            "id": message.sticker.file_unique_id,
+                        }
+                    )
+            if message.text:
+                is_chat = chatai.find_one(
+                    {"word": message.reply_to_message.text, "text": message.text}
+                )
+                if not is_chat:
+                    chatai.insert_one(
+                        {
+                            "word": message.reply_to_message.text,
+                            "text": message.text,
+                            "check": "none",
+                        }
+                    )
+
+
+@nexichat.on_message(
+    (filters.sticker | filters.group | filters.text) & ~filters.private & ~filters.bot, group=4
+)
+async def chatbot_sticker(client: Client, message: Message):
+    # Ignore commands
+    if message.text and any(message.text.startswith(prefix) for prefix in ["!", "/", "?", "@", "#"]):
+        return
     
-    await client.send_chat_action(chat_id, ChatAction.TYPING)
+    except Exception:
+        pass
+    chatdb = MongoClient(MONGO_DB_URI)
+    chatai = chatdb["Word"]["WordDb"]
+
+    if not message.reply_to_message:
+        DAXXdb = MongoClient(MONGO_DB_URI)
+        DAXX = DAXXdb["DAXXDb"]["DAXX"]
+        is_DAXX = DAXX.find_one({"chat_id": message.chat.id})
+        if not is_DAXX:
+            await client.send_chat_action(message.chat.id, ChatAction.TYPING)
+            K = []
+            is_chat = chatai.find({"word": message.sticker.file_unique_id})
+            k = chatai.find_one({"word": message.text})
+            if k:
+                for x in is_chat:
+                    K.append(x["text"])
+                hey = random.choice(K)
+                is_text = chatai.find_one({"text": hey})
+                Yo = is_text["check"]
+                if Yo == "text":
+                    await message.reply_text(f"{hey}")
+                if not Yo == "text":
+                    await message.reply_sticker(f"{hey}")
+
+    if message.reply_to_message:
+        DAXXdb = MongoClient(MONGO_DB_URI)
+        DAXX = DAXXdb["DAXXDb"]["DAXX"]
+        is_DAXX = DAXX.find_one({"chat_id": message.chat.id})
+        if message.reply_to_message.from_user.id == Client.id:
+            if not is_DAXX:
+                await client.send_chat_action(message.chat.id, ChatAction.TYPING)
+                K = []
+                is_chat = chatai.find({"word": message.text})
+                k = chatai.find_one({"word": message.text})
+                if k:
+                    for x in is_chat:
+                        K.append(x["text"])
+                    hey = random.choice(K)
+                    is_text = chatai.find_one({"text": hey})
+                    Yo = is_text["check"]
+                    if Yo == "text":
+                        await message.reply_text(f"{hey}")
+                    if not Yo == "text":
+                        await message.reply_sticker(f"{hey}")
+        if not message.reply_to_message.from_user.id == Client.id:
+            if message.text:
+                is_chat = chatai.find_one(
+                    {
+                        "word": message.reply_to_message.sticker.file_unique_id,
+                        "text": message.text,
+                    }
+                )
+                if not is_chat:
+                    toggle.insert_one(
+                        {
+                            "word": message.reply_to_message.sticker.file_unique_id,
+                            "text": message.text,
+                            "check": "text",
+                        }
+                    )
+            if message.sticker:
+                is_chat = chatai.find_one(
+                    {
+                        "word": message.reply_to_message.sticker.file_unique_id,
+                        "text": message.sticker.file_id,
+                    }
+                )
+                if not is_chat:
+                    chatai.insert_one(
+                        {
+                            "word": message.reply_to_message.sticker.file_unique_id,
+                            "text": message.sticker.file_id,
+                            "check": "none",
+                        }
+                    )
+
+
+@app.on_message(
+    (filters.text | filters.sticker | filters.group) & ~filters.private & ~filters.bot, group=4
+)
+async def chatbot_pvt(client: Client, message: Message):
+    # Ignore commands
+    if message.text and any(message.text.startswith(prefix) for prefix in ["!", "/", "?", "@", "#"]):
+        return
     
-    if message.reply_to_message and message.reply_to_message.from_user.id == client.id:
-        # Learn new responses
-        if message.sticker:
-            words_collection.insert_one({
-                "word": message.reply_to_message.text,
-                "text": message.sticker.file_id,
-                "check": "sticker"
-            })
-        elif message.text:
-            words_collection.insert_one({
-                "word": message.reply_to_message.text,
-                "text": message.text,
-                "check": "text"
-            })
-    else:
-        # Respond to messages
-        word = message.text or message.sticker.file_unique_id
-        responses = list(words_collection.find({"word": word}))
-        if responses:
-            response = random.choice(responses)
-            if response["check"] == "sticker":
-                await message.reply_sticker(response["text"])
-            else:
-                await message.reply_text(response["text"])
+    except Exception:
+        pass
+    chatdb = MongoClient(MONGO_DB_URI)
+    chatai = chatdb["Word"]["WordDb"]
+    if not message.reply_to_message:
+        await client.send_chat_action(message.chat.id, ChatAction.TYPING)
+        K = []
+        is_chat = chatai.find({"word": message.text})
+        for x in is_chat:
+            K.append(x["text"])
+        hey = random.choice(K)
+        is_text = chatai.find_one({"text": hey})
+        Yo = is_text["check"]
+        if Yo == "sticker":
+            await message.reply_sticker(f"{hey}")
+        if not Yo == "sticker":
+            await message.reply_text(f"{hey}")
+    if message.reply_to_message:
+        if message.reply_to_message.from_user.id == client.id:
+            await client.send_chat_action(message.chat.id, ChatAction.TYPING)
+            K = []
+            is_chat = chatai.find({"word": message.text})
+            for x in is_chat:
+                K.append(x["text"])
+            hey = random.choice(K)
+            is_text = chatai.find_one({"text": hey})
+            Yo = is_text["check"]
+            if Yo == "sticker":
+                await message.reply_sticker(f"{hey}")
+            if not Yo == "sticker":
+                await message.reply_text(f"{hey}")
+
+
+@app.on_message(
+    (filters.sticker | filters.sticker | filters.group)
+    & ~filters.private
+    & ~filters.bot,
+    group=4,
+)
+async def chatbot_sticker_pvt(client: Client, message: Message):
+    # Ignore commands
+    if message.text and any(message.text.startswith(prefix) for prefix in ["!", "/", "?", "@", "#"]):
+        return
+    
+    except Exception:
+        pass
+    chatdb = MongoClient(MONGO_DB_URI)
+    chatai = chatdb["Word"]["WordDb"]
+    if not message.reply_to_message:
+        await client.send_chat_action(message.chat.id, ChatAction.TYPING)
+        K = []
+        is_chat = chatai.find({"word": message.sticker.file_unique_id})
+        for x in is_chat:
+            K.append(x["text"])
+        hey = random.choice(K)
+        is_text = chatai.find_one({"text": hey})
+        Yo = is_text["check"]
+        if Yo == "text":
+            await message.reply_text(f"{hey}")
+        if not Yo == "text":
+            await message.reply_sticker(f"{hey}")
+    if message.reply_to_message:
+        if message.reply_to_message.from_user.id == client.id:
+            await client.send_chat_action(message.chat.id, ChatAction.TYPING)
+            K = []
+            is_chat = chatai.find({"word": message.sticker.file_unique_id})
+            for x in is_chat:
+                K.append(x["text"])
+            hey = random.choice(K)
+            is_text = chatai.find_one({"text": hey})
+            Yo = is_text["check"]
+            if Yo == "text":
+                await message.reply_text(f"{hey}")
+            if not Yo == "text":
+                await message.reply_sticker(f"{hey}")
