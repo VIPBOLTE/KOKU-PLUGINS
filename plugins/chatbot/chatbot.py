@@ -9,8 +9,13 @@ from pyrogram.types import InlineKeyboardMarkup, Message
 
 from config import MONGO_DB_URI
 from KOKUMUSIC import app
-from nexichat.modules.helpers import CHATBOT_ON, is_admins
-
+from nexichat.modules.helpers import is_admins
+CHATBOT_ON = [
+    [
+        InlineKeyboardButton(text="ᴇɴᴀʙʟᴇ", callback_data=f"addchat"),
+        InlineKeyboardButton(text="ᴅɪsᴀʙʟᴇ", callback_data=f"rmchat"),
+    ],
+]
 
 @app.on_cmd("chatbot", group_only=True)
 @adminsOnly("can_delete_messages")
