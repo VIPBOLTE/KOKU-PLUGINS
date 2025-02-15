@@ -1,6 +1,5 @@
 import asyncio
 from pyrogram import filters, Client
-from Zaid.modules.help import *
 from pyrogram.types import *
 from pyrogram import __version__
 import os
@@ -161,14 +160,7 @@ async def raid(xspam: Client, e: Message):
           await e.reply_text("Usage: .raid count username")
 
 
-add_command_help(
-    "raid",
-    [
-        [".raid", "<user id and count>`."],
-        [".pornspam", "<count>`."],
-        [".hang", "Make telegram hang."],
-    ],
-)
+
 
 @Client.on_message(
     filters.command(["dreplyraid"], ".") & (filters.me | filters.user(SUDO_USER))
@@ -201,10 +193,3 @@ async def gmute_user(client: Client, message: Message):
         return
 
 
-add_command_help(
-    "replyraid",
-    [
-        [".replyraid", "Reply To User\n To Raid on Someone."],
-        [".dreplyraid", "To Disable ReplyRaid."],
-    ],
-    )
