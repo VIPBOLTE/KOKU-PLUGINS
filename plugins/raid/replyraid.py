@@ -1,17 +1,13 @@
 from pymongo import MongoClient
 from config import OWNER_ID, MONGO_DB_URI
 import asyncio
-from pyrogram import filters, Client
 from pyrogram.types import *
 from pyrogram import __version__
 import os
 import sys
-import asyncio
 import re
 from pyrogram.enums import ChatType
 from random import choice
-from pyrogram import Client, filters
-from pyrogram.types import Message
 from utils.data import *
 from pyrogram import Client, errors, filters
 from pyrogram.types import ChatPermissions, Message
