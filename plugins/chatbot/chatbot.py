@@ -7,7 +7,7 @@ from pyrogram import Client, filters
 from pyrogram.enums import ChatAction
 from pyrogram.types import InlineKeyboardMarkup, Message
 
-from config import MONGO_DB_URI
+from config import MONGO_DB_URI, OWNER_ID
 from KOKUMUSIC import app
 from nexichat.modules.helpers import is_admins
 
@@ -20,11 +20,11 @@ from pyrogram.types import Message
 
 def is_admins(func: Callable) -> Callable:
     async def non_admin(c: app, m: Message):
-        if m.from_user.id == OWNER:
+        if m.from_user.id == OWNER_ID:
             return await func(c, m)
 
         admin = await c.get_chat_member(m.chat.id, m.from_user.id)
-        if admin.status in [ChatMemberStatus.OWNER, ChatMemberStatus.ADMINISTRATOR]:
+        if admin.status in [ChatMemberStatus.OWNER_ID, ChatMemberStatus.ADMINISTRATOR]:
             return await func(c, m)
 
     return non_admin
