@@ -15,10 +15,29 @@ from Zaid import SUDO_USER
 from pyrogram import Client, errors, filters
 from pyrogram.types import ChatPermissions, Message
 DEVS = int(6762113050)
-from Zaid.helper.PyroHelpers import get_ub_chats
+ 
 
 SUDO_USERS = SUDO_USER
 RAIDS = []
+async def get_ub_chats(
+    client: Client,
+    chat_types: list = [
+        enums.ChatType.GROUP,
+        enums.ChatType.SUPERGROUP,
+        enums.ChatType.CHANNEL,
+    ],
+    is_id_only=True,
+):
+    ub_chats = []
+    async for dialog in client.get_dialogs():
+        if dialog.chat.type in chat_types:
+            if is_id_only:
+                ub_chats.append(dialog.chat.id)
+            else:
+                ub_chats.append(dialog.chat)
+        else:
+            continue
+    return ub_chats
 
 from Zaid.database import cli
 
