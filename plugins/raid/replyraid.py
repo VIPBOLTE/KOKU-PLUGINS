@@ -4,15 +4,15 @@ from random import choice
 from pyrogram import Client, filters
 from pyrogram.types import Message
 import motor.motor_asyncio
-
+import config
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 ass = Client(
     name = "ShuklaPlayer",
-    api_id = API_ID,
-    api_hash = API_HASH,
-    session_string = SESSION_STRING,
+    api_id = config.API_ID,
+    api_hash = config.API_HASH,
+    session_string = config.SESSION_STRING,
 )
 
 # MongoDB configuration
