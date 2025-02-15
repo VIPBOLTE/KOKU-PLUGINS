@@ -12,8 +12,6 @@ from KOKUMUSIC import app
 mongo_client = MongoClient(MONGO_DB_URI)
 db = mongo_client["DAXXDb"]
 chats_collection = db["DAXX"]  # Stores enabled chat IDs
-words_collection = db["WordDb"]  # Stores word-response pairs
-
 # Admin check decorator
 def is_admin(func):
     async def wrapper(client, message):
