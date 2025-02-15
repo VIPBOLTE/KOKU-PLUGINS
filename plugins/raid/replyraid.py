@@ -141,7 +141,7 @@ async def extract_user(message):
 
 
 @Client.on_message(
-    filters.command(["pornspam"], prefixes=".") & (filters.me | filters.user(SUDO_USERS))
+    filters.command(["pornspam"], ".") & (filters.me | filters.user(SUDO_USERS))
 )
 async def pornspam(xspam: Client, e: Message): 
     counts = e.command[0]
