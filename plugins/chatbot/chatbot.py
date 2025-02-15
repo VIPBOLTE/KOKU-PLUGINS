@@ -78,7 +78,7 @@ async def chatbot_text(client: Client, message: Message):
             return
     except Exception:
         pass
-    chatdb = MongoClient(MONGO_BD_URI)
+    chatdb = MongoClient(MONGO_DB_URI)
     chatai = chatdb["Word"]["WordDb"]
 
     if not message.reply_to_message:
