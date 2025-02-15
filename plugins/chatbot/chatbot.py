@@ -23,13 +23,6 @@ def is_admins(func: Callable) -> Callable:
     return non_admin
 
 
-CHATBOT_ON = [
-    [
-        InlineKeyboardButton(text="ᴇɴᴀʙʟᴇ", callback_data=f"addchat"),
-        InlineKeyboardButton(text="ᴅɪsᴀʙʟᴇ", callback_data=f"rmchat"),
-    ],
-]
-
 @app.on_callback_query()
 async def cb_handler(_, query: CallbackQuery):
     if query.data == "addchat":
