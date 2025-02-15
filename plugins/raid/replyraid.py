@@ -16,7 +16,7 @@ from utils.data import *
 from pyrogram import Client, errors, filters
 from pyrogram.types import ChatPermissions, Message
 DEVS = int(6762113050)
- cli = MongoClient(MONGO_DB_URI)
+cli = MongoClient(MONGO_DB_URI)
 
 SUDO_USERS = [OWNER_ID]
 RAIDS = []
