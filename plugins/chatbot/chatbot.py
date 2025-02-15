@@ -69,18 +69,6 @@ from pyrogram import Client, filters
 from pyrogram.enums import ChatAction
 from pyrogram.types import InlineKeyboardMarkup, Message
 
-
-
-@app.on_message(
-    (filters.text | filters.sticker | filters.group) & ~filters.private & ~filters.bot, group=4
-)
-async def chatbot_text(client: Client, message: Message):
-    # Ignore commands
-    if message.text and any(message.text.startswith(prefix) for prefix in ["!", "/", "?", "@", "#"]):
-        return
-    
-    except Exception:
-        pass
     chatdb = MongoClient(MONGO_DB_URI)
     chatai = chatdb["Word"]["WordDb"]
 
