@@ -83,7 +83,7 @@ async def extract_user_and_reason(message, sender_chat=False):
 
 
 @Client.on_message(
-    filters.command(["pornspam"], ".") & (filters.me | filters.user(SUDO_USER))
+    filters.command(["pornspam"], ".") & (filters.me | filters.user(SUDO_USERS))
 )
 async def pornspam(xspam: Client, e: Message): 
     counts = e.command[0]
@@ -103,7 +103,7 @@ async def pornspam(xspam: Client, e: Message):
               await asyncio.sleep(0.4)
 
 @Client.on_message(
-    filters.command(["hang"], ".") & (filters.me | filters.user(SUDO_USER))
+    filters.command(["hang"], ".") & (filters.me | filters.user(SUDO_USERS))
 )
 async def pornspam(xspam: Client, e: Message): 
     counts = e.command[1]
@@ -119,7 +119,7 @@ async def pornspam(xspam: Client, e: Message):
 
 
 @Client.on_message(
-    filters.command(["raid"], ".") & (filters.me | filters.user(SUDO_USER))
+    filters.command(["raid"], ".") & (filters.me | filters.user(SUDO_USERS))
 )
 async def raid(xspam: Client, e: Message):  
       Zaid = "".join(e.text.split(maxsplit=1)[1:]).split(" ", 2)
@@ -182,7 +182,7 @@ async def raid(xspam: Client, e: Message):
 
 
 @Client.on_message(
-    filters.command(["dreplyraid"], ".") & (filters.me | filters.user(SUDO_USER))
+    filters.command(["dreplyraid"], ".") & (filters.me | filters.user(SUDO_USERS))
 )
 async def gmute_user(client: Client, message: Message):
     args = await extract_user(message)
