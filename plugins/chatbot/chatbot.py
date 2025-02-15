@@ -191,7 +191,7 @@ async def chatbot_sticker(client: Client, message: Message):
                     await message.reply_sticker(f"{hey}")
 
     if message.reply_to_message:
-        DAXXdb = MongoClient(MONGO_BD_URI)
+        DAXXdb = MongoClient(MONGO_DB_URI)
         DAXX = DAXXdb["DAXXDb"]["DAXX"]
         is_DAXX = DAXX.find_one({"chat_id": message.chat.id})
         if message.reply_to_message.from_user.id == Client.id:
