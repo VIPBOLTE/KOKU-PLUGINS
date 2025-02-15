@@ -11,13 +11,13 @@ from pyrogram import Client, filters
 from pyrogram.types import Message
 from cache.data import *
 from Zaid.database.rraid import *
-from Zaid import SUDO_USER
 from pyrogram import Client, errors, filters
 from pyrogram.types import ChatPermissions, Message
 DEVS = int(6762113050)
  
 
 SUDO_USERS = SUDO_USER
+SUDO_USERS.append(OWNER_ID)
 RAIDS = []
 async def get_ub_chats(
     client: Client,
