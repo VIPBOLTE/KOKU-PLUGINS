@@ -1,3 +1,4 @@
+from config import OWNER_ID
 import asyncio
 from pyrogram import filters, Client
 from pyrogram.types import *
