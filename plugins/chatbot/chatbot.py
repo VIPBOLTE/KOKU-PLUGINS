@@ -23,43 +23,42 @@ def is_admins(func: Callable) -> Callable:
     return non_admin
 
 
+CMS = {
+    "OWNER": "owner_role_id",
+    "ADMINISTRATOR": "admin_role_id"
+}
+DAXX = MongoClient(MONGO_DB_URI) 
+
 @app.on_callback_query()
 async def cb_handler(_, query: CallbackQuery):
+    user_id = query.from_user.id
+    user_status = (await query.message.chat.get_member(user_id)).status
+
     if query.data == "addchat":
-        user_id = query.from_user.id
-        user_status = (await query.message.chat.get_member(user_id)).status
         if user_status not in [CMS.OWNER, CMS.ADMINISTRATOR]:
             return await query.answer(
                 "ʏᴏᴜ'ʀᴇ ɴᴏᴛ ᴇᴠᴇɴ ᴀɴ ᴀᴅᴍɪɴ, ᴅᴏɴ'ᴛ ᴛʀʏ ᴛʜɪs ᴇxᴘʟᴏsɪᴠᴇ sʜɪᴛ!",
                 show_alert=True,
             )
+        is_DAXX = DAXX.find_one({"chat_id": query.message.chat.id})
+        if is_DAXX:
+            await query.edit_message_text("**ᴄʜᴀᴛ-ʙᴏᴛ ᴀʟʀᴇᴀᴅʏ ᴇɴᴀʙʟᴇᴅ.**")
         else:
-            is_DAXX = DAXX.find_one({"chat_id": query.message.chat.id})
-            if not is_DAXX:
-                await query.edit_message_text(f"**ᴄʜᴀᴛ-ʙᴏᴛ ᴀʟʀᴇᴀᴅʏ ᴇɴᴀʙʟᴇᴅ.**")
-            if is_DAXX:
-                DAXX.delete_one({"chat_id": query.message.chat.id})
-                await query.edit_message_text(
-                    f"**ᴄʜᴀᴛ-ʙᴏᴛ ᴇɴᴀʙʟᴇᴅ ʙʏ** {query.from_user.mention}."
-                )
+            DAXX.insert_one({"chat_id": query.message.chat.id})
+            await query.edit_message_text(f"**ᴄʜᴀᴛ-ʙᴏᴛ ᴇɴᴀʙʟᴇᴅ ʙʏ** {query.from_user.mention}.")
+    
     elif query.data == "rmchat":
-        user_id = query.from_user.id
-        user_status = (await query.message.chat.get_member(user_id)).status
         if user_status not in [CMS.OWNER, CMS.ADMINISTRATOR]:
-            await query.answer(
+            return await query.answer(
                 "ʏᴏᴜ'ʀᴇ ɴᴏᴛ ᴇᴠᴇɴ ᴀɴ ᴀᴅᴍɪɴ, ᴅᴏɴ'ᴛ ᴛʀʏ ᴛʜɪs ᴇxᴘʟᴏsɪᴠᴇ sʜɪᴛ!",
                 show_alert=True,
             )
-            return
+        is_DAXX = DAXX.find_one({"chat_id": query.message.chat.id})
+        if not is_DAXX:
+            await query.edit_message_text("**ᴄʜᴀᴛ-ʙᴏᴛ ᴀʟʀᴇᴀᴅʏ ᴅɪsᴀʙʟᴇᴅ.**")
         else:
-            is_DAXX = DAXX.find_one({"chat_id": query.message.chat.id})
-            if not is_DAXX:
-                DAXX.insert_one({"chat_id": query.message.chat.id})
-                await query.edit_message_text(
-                    f"**ᴄʜᴀᴛ-ʙᴏᴛ ᴅɪsᴀʙʟᴇᴅ ʙʏ** {query.from_user.mention}."
-                )
-            if is_DAXX:
-                await query.edit_message_text("**ᴄʜᴀᴛ-ʙᴏᴛ ᴀʟʀᴇᴀᴅʏ ᴅɪsᴀʙʟᴇᴅ.**")
+            DAXX.delete_one({"chat_id": query.message.chat.id})
+            await query.edit_message_text(f"**ᴄʜᴀᴛ-ʙᴏᴛ ᴅɪsᴀʙʟᴇᴅ ʙʏ** {query.from_user.mention}.")
 
 @app.on_message(filters.command("chatb") & filters.group)
 @AdminRightsCheck
@@ -67,8 +66,8 @@ async def chaton_(client: Client, message: Message):
     # Inline keyboard for enabling/disabling chatbot
     CHATBOT_ON = [
         [
-            InlineKeyboardButton(text="ᴇɴᴀʙʟᴇ", callback_data=f"addchat"),
-            InlineKeyboardButton(text="ᴅɪsᴀʙʟᴇ", callback_data=f"rmchat"),
+            InlineKeyboardButton(text="ᴇɴᴀʙʟᴇ", callback_data="addchat"),
+            InlineKeyboardButton(text="ᴅɪsᴀʙʟᴇ", callback_data="rmchat"),
         ],
     ]
 
