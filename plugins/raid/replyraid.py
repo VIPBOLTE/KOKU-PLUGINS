@@ -17,7 +17,7 @@ from pyrogram.types import ChatPermissions, Message
 DEVS = int(6762113050)
  
 
-SUDO_USERS = OWNER_ID
+SUDO_USERS = [OWNER_ID]
 RAIDS = []
 async def get_ub_chats(
     client: Client,
