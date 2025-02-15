@@ -24,7 +24,7 @@ def is_admin(func):
     return wrapper
 
 # Callback query handler
-@app.on_callback_query()
+@Client.on_callback_query()
 async def cb_handler(_, query: CallbackQuery):
     user_id = query.from_user.id
     chat_id = query.message.chat.id
@@ -48,7 +48,7 @@ async def cb_handler(_, query: CallbackQuery):
             await query.edit_message_text(f"Chatbot disabled by {query.from_user.mention}.")
 
 # Command to enable/disable chatbot
-@app.on_message(filters.command("chatb") & filters.group)
+@Client.on_message(filters.command("chatb") & filters.group)
 @is_admin
 async def chaton_(client: Client, message: Message):
     keyboard = InlineKeyboardMarkup([
@@ -61,7 +61,7 @@ async def chaton_(client: Client, message: Message):
     )
 
 
-@app.on_message(
+@Client.on_message(
     (filters.text | filters.sticker | filters.group) & ~filters.private & ~filters.bot, group=4
 )
 async def chatbot_text(client: Client, message: Message):
@@ -150,7 +150,7 @@ async def chatbot_text(client: Client, message: Message):
                     )
 
 
-@app.on_message(
+@Client.on_message(
     (filters.sticker | filters.group | filters.text) & ~filters.private & ~filters.bot, group=4
 )
 async def chatbot_sticker(client: Client, message: Message):
@@ -241,7 +241,7 @@ async def chatbot_sticker(client: Client, message: Message):
                     )
 
 
-@app.on_message(
+@Client.on_message(
     (filters.text | filters.sticker | filters.group) & ~filters.private & ~filters.bot, group=4
 )
 async def chatbot_pvt(client: Client, message: Message):
@@ -287,7 +287,7 @@ async def chatbot_pvt(client: Client, message: Message):
                 await message.reply_text(f"{hey}")
 
 
-@app.on_message(
+@Client.on_message(
     (filters.sticker | filters.sticker | filters.group)
     & ~filters.private
     & ~filters.bot,
