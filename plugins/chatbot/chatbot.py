@@ -27,7 +27,8 @@ CMS = {
     "OWNER": "owner_role_id",
     "ADMINISTRATOR": "admin_role_id"
 }
-DAXX = MongoClient(MONGO_DB_URI) 
+DAXXdb = MongoClient(MONGO_DB_URI)
+        DAXX = DAXXdb["DAXXDb"]["DAXX"]
 
 @app.on_callback_query()
 async def cb_handler(_, query: CallbackQuery):
