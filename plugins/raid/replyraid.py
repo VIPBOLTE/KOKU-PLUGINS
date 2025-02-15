@@ -2,7 +2,6 @@ from pymongo import MongoClient
 from config import OWNER_ID, MONGO_DB_URI
 import asyncio
 from pyrogram.types import *
-from pyrogram import __version__
 import os
 import sys
 import re
