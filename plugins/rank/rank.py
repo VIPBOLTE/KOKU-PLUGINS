@@ -285,10 +285,10 @@ async def weekly_callback(_, query):
         current_week_str = f"{year}-W{week_num:02d}"
         
         loop = asyncio.get_event_loop()
-        top_members = await loop.run_in_executor()
+        top_members = await loop.run_in_executor(
             ThreadPoolExecutor(),
             lambda: list(weeklydb.find({"week": current_week_str}).sort("total_messages", -1).limit(10))
-        
+      )
         if not top_members:
             await query.answer("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛʜɪs ᴡᴇᴇᴋ.")
             return
