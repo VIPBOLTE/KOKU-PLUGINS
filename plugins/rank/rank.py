@@ -146,18 +146,34 @@ async def leaderboard_callback(_, query):
         selection = query.data
         chat_id = query.message.chat.id
 
+        # Determine the leaderboard data based on the selected option
         if selection == "today":
             data = list(rankdb.find({"chat_id": chat_id, "type": "today"}))
             time_frame = "Today's Leaderboard"
+            button_texts = [
+                "✅ Today",
+                "Week",
+                "Overall"
+            ]
         elif selection == "week":
             current_week = get_current_week()
             data = list(rankdb.find({"chat_id": chat_id, "type": "week", "week": current_week}))
             time_frame = "This Week's Leaderboard"
+            button_texts = [
+                "Today",
+                "✅ Week",
+                "Overall"
+            ]
         elif selection == "overall":
             data = list(rankdb.find({"type": "overall"}).sort("total_messages", -1).limit(10))
             time_frame = "Overall Leaderboard"
+            button_texts = [
+                "Today",
+                "Week",
+                "✅ Overall"
+            ]
 
-        # Sort the data (if needed) and generate the leaderboard text
+        # Sort the data and generate the leaderboard text
         sorted_data = sorted(data, key=lambda x: x['total_messages'], reverse=True)
         
         if sorted_data:
@@ -174,12 +190,12 @@ async def leaderboard_callback(_, query):
             # Generate the graph
             graph = generate_horizontal_bar_chart(users_data, time_frame)
             if graph:
-                # Modify buttons with checkmark based on selection
+                # Modify buttons with the appropriate active button
                 button = InlineKeyboardMarkup(
                     [[
-                        InlineKeyboardButton(f"✅ Today", callback_data="today"),
-                        InlineKeyboardButton(f"Week", callback_data="week"),
-                        InlineKeyboardButton(f"Overall", callback_data="overall")
+                        InlineKeyboardButton(button_texts[0], callback_data="today"),
+                        InlineKeyboardButton(button_texts[1], callback_data="week"),
+                        InlineKeyboardButton(button_texts[2], callback_data="overall")
                     ]]
                 )
                 await query.message.edit_media(InputMediaPhoto(graph, caption=response), reply_markup=button)
