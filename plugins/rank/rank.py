@@ -169,6 +169,7 @@ async def overall_ranking(_, message):
         await message.reply_text("An error occurred.")
 
 @app.on_message(filters.command("weekly"))
+@app.on_message(filters.command("weekly"))
 async def weekly_ranking(_, message):
     try:
         current_week = datetime.datetime.now().isocalendar()
@@ -179,7 +180,8 @@ async def weekly_ranking(_, message):
         top_members = await loop.run_in_executor(
             ThreadPoolExecutor(),
             lambda: list(weeklydb.find({"week": current_week_str}).sort("total_messages", -1).limit(10))
-        
+        )  # Missing parenthesis added here
+
         if not top_members:
             await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛʜɪs ᴡᴇᴇᴋ.")
             return
@@ -209,7 +211,6 @@ async def weekly_ranking(_, message):
     except Exception as e:
         logger.error(f"Error in weekly_ranking: {e}")
         await message.reply_text("An error occurred.")
-
 # Callbacks
 @app.on_callback_query(filters.regex("today"))
 async def today_callback(_, query):
