@@ -291,7 +291,7 @@ async def weekly_ranking(_, message):
         top_members = await loop.run_in_executor(
             ThreadPoolExecutor(),
             lambda: list(weeklydb.find({"week": current_week_str}).sort("total_messages", -1).limit(10))
-        
+        )
         if not top_members:
             await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛʜɪs ᴡᴇᴇᴋ.")
             return
