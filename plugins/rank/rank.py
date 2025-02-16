@@ -44,34 +44,46 @@ def get_current_week():
 
 # Watcher for today's messages and weekly messages
 @app.on_message(filters.group & filters.group, group=6)
+# Watcher for today's messages
+@app.on_message(filters.group & filters.group, group=6)
 def today_watcher(_, message):
     try:
         chat_id = message.chat.id
         user_id = message.from_user.id
         current_week = get_current_week()  # Get current week number
         
-        # Update today's messages
-        if chat_id in today and user_id in today[chat_id]:
-            today[chat_id][user_id]["total_messages"] += 1
+        # Update today's messages in MongoDB
+        today_record = rankdb.find_one({"_id": user_id, "chat_id": chat_id, "type": "today"})
+        if today_record:
+            rankdb.update_one(
+                {"_id": user_id, "chat_id": chat_id, "type": "today"},
+                {"$inc": {"total_messages": 1}},
+                upsert=True
+            )
         else:
-            if chat_id not in today:
-                today[chat_id] = {}
-            if user_id not in today[chat_id]:
-                today[chat_id][user_id] = {"total_messages": 1}
-            else:
-                today[chat_id][user_id]["total_messages"] = 1
+            rankdb.insert_one({
+                "_id": user_id,
+                "chat_id": chat_id,
+                "type": "today",
+                "total_messages": 1
+            })
         
         # Update weekly messages
-        if chat_id not in week:
-            week[chat_id] = {}
-        
-        if user_id not in week[chat_id]:
-            week[chat_id][user_id] = {}
-
-        if current_week not in week[chat_id][user_id]:
-            week[chat_id][user_id][current_week] = 1
+        week_record = rankdb.find_one({"_id": user_id, "chat_id": chat_id, "type": "week", "week": current_week})
+        if week_record:
+            rankdb.update_one(
+                {"_id": user_id, "chat_id": chat_id, "type": "week", "week": current_week},
+                {"$inc": {"total_messages": 1}},
+                upsert=True
+            )
         else:
-            week[chat_id][user_id][current_week] += 1
+            rankdb.insert_one({
+                "_id": user_id,
+                "chat_id": chat_id,
+                "type": "week",
+                "week": current_week,
+                "total_messages": 1
+            })
     except Exception as e:
         logger.error(f"Error in today_watcher: {e}")
 
