@@ -1,6 +1,6 @@
 from pyrogram import filters
 from pymongo import MongoClient
-from KOKUMUSIC import app
+from ChampuMusic import app
 from pyrogram.types import *
 from pyrogram.errors import MessageNotModified
 from pyrogram.types import (CallbackQuery, InlineKeyboardButton,
@@ -25,8 +25,16 @@ daily_collection = db["daily_ranking"]
 user_data = {}
 today = {}
 
+# Load daily rankings from MongoDB on bot start
+async def load_daily_rankings():
+    global today
+    today = {}
+    for chat in daily_collection.find():
+        chat_id = chat["_id"]
+        today[chat_id] = chat["users"]
+
 # Image URLs
-KOKU = [
+Champu = [
     "https://telegra.ph/file/56f46a11100eb698563f1.jpg",
     "https://telegra.ph/file/66552cbeb49088f98f752.jpg",
     "https://telegra.ph/file/a9ada352fd34ec8a01013.jpg",
@@ -89,7 +97,7 @@ async def today_(_, message):
                 [[    
                    InlineKeyboardButton("ᴏᴠᴇʀᴀʟʟ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="overall"),
                 ]])
-            await message.reply_photo(random.choice(KOKU), caption=response, reply_markup=button, has_spoiler=True)
+            await message.reply_photo(random.choice(Champu), caption=response, reply_markup=button, has_spoiler=True)
         else:
             await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛᴏᴅᴀʏ.")
     else:
@@ -115,7 +123,7 @@ async def ranking(_, message):
             [[    
                InlineKeyboardButton("ᴛᴏᴅᴀʏ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="today"),
             ]])
-    await message.reply_photo(random.choice(KOKU), caption=response, reply_markup=button, has_spoiler=True)
+    await message.reply_photo(random.choice(Champu), caption=response, reply_markup=button, has_spoiler=True)
 
 # Callback query for today's leaderboard
 @app.on_callback_query(filters.regex("today"))
@@ -166,3 +174,10 @@ async def overall_rank(_, query):
             ]])
     await query.message.edit_text(response, reply_markup=button)
 
+# Async main function to start the bot and load daily rankings
+async def main():
+    await load_daily_rankings()  # Load the daily rankings
+    await app.start()  # Start the bot
+
+# Run the main function using asyncio
+asyncio.run(main())
