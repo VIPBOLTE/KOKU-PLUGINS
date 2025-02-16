@@ -10,9 +10,6 @@ SafoneAPI
 nekos.py
 telegraph
 uuid
+matplotlib
 git+https://github.com/VIPBOLTE/KOKU_THEAPI@main
 git+https://github.com/VIPBOLTE/KOKU_API
-pyrogram
-pymongo
-dnspython
-tgcrypto
