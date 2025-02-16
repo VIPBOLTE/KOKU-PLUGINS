@@ -175,4 +175,4 @@ async def overall_rank(_, query):
     await query.message.edit_text(response, reply_markup=button)
 
 # Load daily rankings when the bot starts
-
+app.run(load_daily_rankings())
