@@ -7,6 +7,7 @@ import io
 import logging
 from collections import defaultdict
 from KOKUMUSIC import app
+
 # MongoDB connection
 client = MongoClient('mongodb+srv://yash:shivanshudeo@yk.6bvcjqp.mongodb.net/')
 db = client['Champu']
@@ -67,11 +68,21 @@ async def message_watcher(_, message):
         current_date = datetime.date.today()
         most_recent_sunday, week_number = get_week_number_for_sunday()
 
-        # Update the user's message counts for today, this week, and overall
+        # Get user stats or initialize if not exist
         user_stats = rankdb.find_one({"_id": user_id})
 
         if not user_stats:
-            user_stats = {"_id": user_id, "overall": {"total_messages": 0}, "daily": {"date": str(current_date), "total_messages": 0}, "weekly": {"start_date": str(most_recent_sunday), "total_messages": 0}}
+            user_stats = {
+                "_id": user_id,
+                "overall": {"total_messages": 0},
+                "daily": {"date": str(current_date), "total_messages": 0},
+                "weekly": {"start_date": str(most_recent_sunday), "total_messages": 0}
+            }
+            rankdb.insert_one(user_stats)
+
+        # Ensure 'daily' field exists
+        if "daily" not in user_stats:
+            user_stats["daily"] = {"date": str(current_date), "total_messages": 0}
 
         # Update overall message count
         rankdb.update_one({"_id": user_id}, {"$inc": {"overall.total_messages": 1}}, upsert=True)
@@ -87,6 +98,8 @@ async def message_watcher(_, message):
             rankdb.update_one({"_id": user_id}, {"$inc": {"weekly.total_messages": 1}})
         else:
             rankdb.update_one({"_id": user_id}, {"$set": {"weekly.start_date": str(most_recent_sunday), "weekly.total_messages": 1}})
+        
+        logger.info(f"Updated stats for user {user_id}")
     except Exception as e:
         logger.error(f"Error in message_watcher: {e}")
 
