@@ -36,11 +36,21 @@ today = {}
 week = {}  # Add in-memory storage for the week data
 
 # Watcher for today's messages
+from datetime import datetime
+
+# Helper function to get the current week number
+def get_current_week():
+    return datetime.now().isocalendar()[1]
+
+# Watcher for today's messages and weekly messages
 @app.on_message(filters.group & filters.group, group=6)
 def today_watcher(_, message):
     try:
         chat_id = message.chat.id
         user_id = message.from_user.id
+        current_week = get_current_week()  # Get current week number
+        
+        # Update today's messages
         if chat_id in today and user_id in today[chat_id]:
             today[chat_id][user_id]["total_messages"] += 1
         else:
@@ -50,6 +60,18 @@ def today_watcher(_, message):
                 today[chat_id][user_id] = {"total_messages": 1}
             else:
                 today[chat_id][user_id]["total_messages"] = 1
+        
+        # Update weekly messages
+        if chat_id not in week:
+            week[chat_id] = {}
+        
+        if user_id not in week[chat_id]:
+            week[chat_id][user_id] = {}
+
+        if current_week not in week[chat_id][user_id]:
+            week[chat_id][user_id][current_week] = 1
+        else:
+            week[chat_id][user_id][current_week] += 1
     except Exception as e:
         logger.error(f"Error in today_watcher: {e}")
 
