@@ -134,31 +134,27 @@ async def leaderboard_callback(_, query):
         selection = query.data
         chat_id = query.message.chat.id
 
-        # Determine the leaderboard data based on the selected option
         if selection == "today":
-            data = today.get(chat_id, {})
+            data = list(rankdb.find({"chat_id": chat_id, "type": "today"}))
             time_frame = "Today's Leaderboard"
         elif selection == "week":
-            data = week.get(chat_id, {})  # You'll need to track weekly data
+            current_week = get_current_week()
+            data = list(rankdb.find({"chat_id": chat_id, "type": "week", "week": current_week}))
             time_frame = "This Week's Leaderboard"
         elif selection == "overall":
-            data = rankdb.find().sort("total_messages", -1).limit(10)
+            data = list(rankdb.find({"type": "overall"}).sort("total_messages", -1).limit(10))
             time_frame = "Overall Leaderboard"
 
-        # Sort the data
-        sorted_data = sorted(data.items(), key=lambda x: x[1]["total_messages"] if isinstance(x[1], dict) else x[1], reverse=True)
+        # Sort the data (if needed) and generate the leaderboard text
+        sorted_data = sorted(data, key=lambda x: x['total_messages'], reverse=True)
         
         if sorted_data:
             response = f"⬤ 📈 {time_frame}\n\n"
             users_data = []
-            for idx, (user_id, total_messages) in enumerate(sorted_data[:10], start=1):
-                if isinstance(total_messages, dict):
-                    total_messages = total_messages["total_messages"]
-                try:
-                    user_name = (await app.get_users(user_id)).first_name
-                except:
-                    user_name = "Unknown"
-                
+            for idx, record in enumerate(sorted_data[:10], start=1):
+                user_id = record["_id"]
+                user_name = (await app.get_users(user_id)).first_name if "first_name" in await app.get_users(user_id) else "Unknown"
+                total_messages = record["total_messages"]
                 user_info = f"{idx}.   {user_name} ➥ {total_messages}\n"
                 response += user_info
                 users_data.append((user_name, total_messages))
