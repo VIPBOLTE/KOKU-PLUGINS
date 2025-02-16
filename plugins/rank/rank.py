@@ -8,7 +8,7 @@ import logging
 from collections import defaultdict
 
 # MongoDB connection
-client = MongoClient('mongodb+srv://your_connection_string')
+client = MongoClient('mongodb+srv://yash:shivanshudeo@yk.6bvcjqp.mongodb.net/')
 db = client['Champu']
 rankdb = db['UserStats']  # We store all stats in this one collection
 
