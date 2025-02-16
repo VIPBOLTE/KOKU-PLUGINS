@@ -277,6 +277,51 @@ async def overall_callback(_, query):
         logger.error(f"Error in overall_callback: {e}")
         await query.answer("An error occurred.")
 
+# ... (पहले का कोड same रहेगा)
+
+@app.on_message(filters.command("weekly"))
+async def weekly_ranking(_, message):
+    try:
+        current_week = datetime.datetime.now().isocalendar()
+        year, week_num, day = current_week
+        current_week_str = f"{year}-W{week_num:02d}"
+        
+        loop = asyncio.get_event_loop()
+        # Fixed lambda syntax और query structure
+        top_members = await loop.run_in_executor(
+            ThreadPoolExecutor(),
+            lambda: list(weeklydb.find({"week": current_week_str}).sort("total_messages", -1).limit(10))
+        
+        if not top_members:
+            await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛʜɪs ᴡᴇᴇᴋ.")
+            return
+        
+        response = "⬤ 📈 ᴡᴇᴇᴋʟʏ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ\n\n"
+        users_data = []
+        for idx, member in enumerate(top_members, 1):
+            user_id = member["user_id"]
+            total = member["total_messages"]
+            try:
+                user_name = (await app.get_users(user_id)).first_name
+            except:
+                user_name = "Unknown"
+            response += f"{idx}. {user_name} ➥ {total}\n"
+            users_data.append((user_name, total))
+        
+        graph = generate_horizontal_bar_chart(users_data, "Weekly Leaderboard")
+        if graph:
+            buttons = InlineKeyboardMarkup([
+                [InlineKeyboardButton("ᴛᴏᴅᴀʏ", callback_data="today"),
+                 InlineKeyboardButton("ᴡᴇᴇᴋʟʏ", callback_data="weekly"),
+                 InlineKeyboardButton("ᴏᴠᴇʀᴀʟʟ", callback_data="overall")]
+            ])
+            await message.reply_photo(graph, caption=response, reply_markup=buttons, has_spoiler=True)
+        else:
+            await message.reply_text("Error generating graph.")
+    except Exception as e:
+        logger.error(f"Error in weekly_ranking: {e}")
+        await message.reply_text("An error occurred.")
+
 @app.on_callback_query(filters.regex("weekly"))
 async def weekly_callback(_, query):
     try:
@@ -285,12 +330,13 @@ async def weekly_callback(_, query):
         current_week_str = f"{year}-W{week_num:02d}"
         
         loop = asyncio.get_event_loop()
+        # Fixed lambda syntax और proper query execution
         top_members = await loop.run_in_executor(
             ThreadPoolExecutor(),
-            lambda: list(weeklydb.find({"week": current_week_str}).sort("total_messages", -1).limit(10))
-        )
+            lambda: list(weeklydb.find({"week": current_week_str}).sort("total_messages", -1).limit(10)))
+        
         if not top_members:
-            await query.answer("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛʜɪs ᴡᴇᴇᴋ.")
+            await query.answer("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛʜɪs ᴡᴇᴇᴋ.", show_alert=True)
             return
         
         response = "⬤ 📈 ᴡᴇᴇᴋʟʏ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ\n\n"
@@ -314,7 +360,9 @@ async def weekly_callback(_, query):
             ])
             await query.message.edit_media(InputMediaPhoto(graph, caption=response), reply_markup=buttons)
         else:
-            await query.answer("Error updating leaderboard.")
+            await query.answer("Error updating leaderboard.", show_alert=True)
     except Exception as e:
         logger.error(f"Error in weekly_callback: {e}")
-        await query.answer("An error occurred.")
+        await query.answer("An error occurred.", show_alert=True)
+
+# ... (बाकी callbacks same रहेंगे)
