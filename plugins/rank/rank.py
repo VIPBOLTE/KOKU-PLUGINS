@@ -4,14 +4,7 @@ from KOKUMUSIC import app
 from pyrogram.types import *
 from pyrogram.errors import MessageNotModified
 from pyrogram.types import InputMediaPhoto
-from typing import Union
 import asyncio
-import random
-import requests
-import os
-import time
-from pyrogram.enums import ChatType
-import config
 import matplotlib.pyplot as plt
 import io
 import logging
@@ -21,7 +14,7 @@ from datetime import datetime
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# MongoDB connection with error handling
+# MongoDB connection
 try:
     client = MongoClient('mongodb+srv://yash:shivanshudeo@yk.6bvcjqp.mongodb.net/', serverSelectionTimeoutMS=5000)
     client.server_info()  # Test connection
@@ -31,45 +24,60 @@ except Exception as e:
     logger.error(f"Failed to connect to MongoDB: {e}")
     raise
 
-# In-memory data storage (optional, adjust as needed)
-user_data = {}
-
-# Helper function to get current week number
+# Helper functions
 def get_current_week():
     return datetime.now().isocalendar()[1]
 
-# Watcher for today's and weekly messages
+def generate_doc_id(user_id: int, chat_id: int, type: str, week: int = None) -> str:
+    """Generate unique document ID"""
+    if week and type == "week":
+        return f"{user_id}_{chat_id}_{type}_{week}"
+    return f"{user_id}_{chat_id}_{type}"
+
+# Message watchers
 @app.on_message(filters.group, group=6)
-async def today_watcher(_, message):
+async def message_watcher(_, message):
     try:
         chat_id = message.chat.id
         user_id = message.from_user.id
         current_week = get_current_week()
 
         # Update today's messages
-        today_filter = {"_id": user_id, "chat_id": chat_id, "type": "today"}
-        rankdb.update_one(today_filter, {"$inc": {"total_messages": 1}}, upsert=True)
+        today_doc_id = generate_doc_id(user_id, chat_id, "today")
+        rankdb.update_one(
+            {"_id": today_doc_id},
+            {"$inc": {"total_messages": 1}, "$set": {"username": message.from_user.username}},
+            upsert=True
+        )
 
         # Update weekly messages
-        week_filter = {"_id": user_id, "chat_id": chat_id, "type": "week", "week": current_week}
-        rankdb.update_one(week_filter, {"$inc": {"total_messages": 1}}, upsert=True)
-    except Exception as e:
-        logger.error(f"Error in today_watcher: {e}")
+        week_doc_id = generate_doc_id(user_id, chat_id, "week", current_week)
+        rankdb.update_one(
+            {"_id": week_doc_id},
+            {"$inc": {"total_messages": 1}, "$set": {"username": message.from_user.username}},
+            upsert=True
+        )
 
-# Watcher for overall messages (per chat)
+    except Exception as e:
+        logger.error(f"Error in message_watcher: {e}")
+
 @app.on_message(filters.group, group=11)
 async def overall_watcher(_, message):
     try:
         chat_id = message.chat.id
         user_id = message.from_user.id
 
-        # Update overall messages for the user in this chat
-        overall_filter = {"_id": user_id, "chat_id": chat_id, "type": "overall"}
-        rankdb.update_one(overall_filter, {"$inc": {"total_messages": 1}}, upsert=True)
+        # Update overall messages
+        overall_doc_id = generate_doc_id(user_id, chat_id, "overall")
+        rankdb.update_one(
+            {"_id": overall_doc_id},
+            {"$inc": {"total_messages": 1}, "$set": {"username": message.from_user.username}},
+            upsert=True
+        )
     except Exception as e:
         logger.error(f"Error in overall_watcher: {e}")
 
-# Generate horizontal bar chart
+# Leaderboard components
 def generate_horizontal_bar_chart(data, title):
     try:
         users = [user[0] for user in data]
@@ -93,77 +101,96 @@ def generate_horizontal_bar_chart(data, title):
         logger.error(f"Error generating graph: {e}")
         return None
 
-# /ranking command handler
+async def get_leaderboard_data(chat_id: int, type: str) -> list:
+    current_week = get_current_week()
+    query = {
+        "_id": {
+            "$regex": f"_.*_{chat_id}_{'week_' + str(current_week) if type == 'week' else type}$"
+        }
+    } if type != "overall" else {"_id": {"$regex": f"_.*_{chat_id}_overall$"}}
+
+    pipeline = [
+        {"$match": query},
+        {"$group": {
+            "_id": "$_id",
+            "total_messages": {"$max": "$total_messages"},
+            "user_id": {"$first": {"$toInt": {"$arrayElemAt": [{"$split": ["$_id", "_"]}, 0]}}},
+            "username": {"$first": "$username"}
+        }},
+        {"$sort": {"total_messages": -1}},
+        {"$limit": 10}
+    ]
+
+    results = []
+    async for doc in rankdb.aggregate(pipeline):
+        try:
+            user = await app.get_users(doc["user_id"])
+            name = user.first_name
+        except:
+            name = doc.get("username", "Unknown User")
+        results.append((name, doc["total_messages"]))
+    
+    return results
+
+# Command handlers
 @app.on_message(filters.command("ranking"))
-async def ranking(_, message):
+async def ranking_command(_, message):
     try:
-        button = InlineKeyboardMarkup(
-            [[
+        buttons = InlineKeyboardMarkup([
+            [
                 InlineKeyboardButton("Today", callback_data="today"),
                 InlineKeyboardButton("Week", callback_data="week"),
                 InlineKeyboardButton("Overall", callback_data="overall")
-            ]]
-        )
-        await message.reply_text("Select leaderboard type:", reply_markup=button)
+            ]
+        ])
+        await message.reply_text("📊 Select Leaderboard Type:", reply_markup=buttons)
     except Exception as e:
-        logger.error(f"Error in /ranking: {e}")
-        await message.reply_text("An error occurred.")
+        logger.error(f"Error in /ranking command: {e}")
 
-# Callback handler for leaderboard buttons
 @app.on_callback_query(filters.regex("^(today|week|overall)$"))
 async def leaderboard_callback(_, query):
     try:
-        selection = query.data
         chat_id = query.message.chat.id
-        time_frame = ""
-        button_texts = ["Today", "Week", "Overall"]
-
-        # Determine active button and fetch data
-        if selection == "today":
-            data = list(rankdb.find({"chat_id": chat_id, "type": "today"}).sort("total_messages", -1).limit(10))
-            time_frame = "Today's Leaderboard"
-            button_texts[0] = "✅ Today"
-        elif selection == "week":
-            current_week = get_current_week()
-            data = list(rankdb.find({"chat_id": chat_id, "type": "week", "week": current_week}).sort("total_messages", -1).limit(10))
-            time_frame = "This Week's Leaderboard"
-            button_texts[1] = "✅ Week"
-        elif selection == "overall":
-            data = list(rankdb.find({"chat_id": chat_id, "type": "overall"}).sort("total_messages", -1).limit(10))
-            time_frame = "Overall Leaderboard"
-            button_texts[2] = "✅ Overall"
-
-        # Prepare leaderboard text
-        if not data:
-            await query.answer("No data available yet.", show_alert=True)
-            return
-
-        response = f"⬤ 📈 {time_frame}\n\n"
-        users_data = []
-        for idx, record in enumerate(data, start=1):
-            user_id = record["_id"]
-            try:
-                user = await app.get_users(user_id)
-                user_name = user.first_name
-            except:
-                user_name = "Unknown"
-            total_msgs = record["total_messages"]
-            response += f"{idx}. {user_name} ➥ {total_msgs}\n"
-            users_data.append((user_name, total_msgs))
-
-        # Generate and send graph
-        graph = generate_horizontal_bar_chart(users_data, time_frame)
-        if not graph:
-            await query.answer("Failed to generate graph.")
-            return
-
-        media = InputMediaPhoto(graph, caption=response)
-        button = InlineKeyboardMarkup([[InlineKeyboardButton(t, callback_data=c)] for t, c in zip(button_texts, ["today", "week", "overall"])])
+        selection = query.data
+        time_frames = {
+            "today": "Today's Leaderboard",
+            "week": "Weekly Leaderboard",
+            "overall": "All-Time Leaderboard"
+        }
         
-        await query.message.edit_media(media, reply_markup=button)
+        # Get leaderboard data
+        data = await get_leaderboard_data(chat_id, selection)
+        if not data:
+            await query.answer("No data available yet!", show_alert=True)
+            return
+
+        # Generate response text
+        response = f"🏆 **{time_frames[selection]}**\n\n"
+        for idx, (name, count) in enumerate(data, start=1):
+            response += f"{idx}. {name} ➠ **{count}** messages\n"
+            if idx >= 10:
+                break
+
+        # Generate graph
+        graph = generate_horizontal_bar_chart(data, time_frames[selection])
+        if not graph:
+            await query.answer("Failed to generate visualization")
+            return
+
+        # Update buttons with active state
+        active_buttons = []
+        for btn_type in ["today", "week", "overall"]:
+            text = f"✅ {btn_type.capitalize()}" if btn_type == selection else btn_type.capitalize()
+            active_buttons.append(InlineKeyboardButton(text, callback_data=btn_type))
+        
+        await query.message.edit_media(
+            media=InputMediaPhoto(graph, caption=response),
+            reply_markup=InlineKeyboardMarkup([active_buttons])
+        )
         await query.answer()
+        
     except MessageNotModified:
         await query.answer()
     except Exception as e:
         logger.error(f"Leaderboard callback error: {e}")
-        await query.answer("An error occurred.")
+        await query.answer("Error loading leaderboard")
