@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import io
 import logging
 from collections import defaultdict
-
+from KOKUMUSIC import app
 # MongoDB connection
 client = MongoClient('mongodb+srv://yash:shivanshudeo@yk.6bvcjqp.mongodb.net/')
 db = client['Champu']
