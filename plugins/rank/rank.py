@@ -152,6 +152,8 @@ async def leaderboard_callback(_, query):
     try:
         chat_id = query.message.chat.id
         selection = query.data
+        logger.info(f"Received callback query for {selection} leaderboard")  # Log the callback data
+
         time_frames = {
             "today": "Today's Leaderboard",
             "week": "Weekly Leaderboard",
@@ -182,7 +184,7 @@ async def leaderboard_callback(_, query):
         for btn_type in ["today", "week", "overall"]:
             text = f"✅ {btn_type.capitalize()}" if btn_type == selection else btn_type.capitalize()
             active_buttons.append(InlineKeyboardButton(text, callback_data=btn_type))
-        
+
         await query.message.edit_media(
             media=InputMediaPhoto(graph, caption=response),
             reply_markup=InlineKeyboardMarkup([active_buttons])
