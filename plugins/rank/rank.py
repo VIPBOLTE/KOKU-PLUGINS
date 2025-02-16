@@ -25,14 +25,6 @@ daily_collection = db["daily_ranking"]
 user_data = {}
 today = {}
 
-# Load daily rankings from MongoDB on bot start
-async def load_daily_rankings():
-    global today
-    today = {}
-    for chat in daily_collection.find():
-        chat_id = chat["_id"]
-        today[chat_id] = chat["users"]
-
 # Image URLs
 KOKU = [
     "https://telegra.ph/file/56f46a11100eb698563f1.jpg",
@@ -174,5 +166,3 @@ async def overall_rank(_, query):
             ]])
     await query.message.edit_text(response, reply_markup=button)
 
-# Load daily rankings when the bot starts
-app.run(load_daily_rankings())
