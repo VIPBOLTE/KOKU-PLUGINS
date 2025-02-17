@@ -1,6 +1,6 @@
 from pyrogram import filters
 from pymongo import MongoClient
-from ChampuMusic import app
+from KOKUMUSIC import app
 from pyrogram.types import *
 from pyrogram.errors import MessageNotModified
 from pyrogram.types import InputMediaPhoto
