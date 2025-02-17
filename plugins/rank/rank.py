@@ -1,4 +1,5 @@
 from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 import logging
@@ -145,7 +146,7 @@ async def ranking_callback(client, callback_query):
     if data == "today":
         leaderboard = sorted(today.get(chat_id, {}).items(), key=lambda x: x[1]["total_messages"], reverse=True)[:10]
         response = "📊 Today's Top 10 Leaderboard:\n"
-        response += "\n".join([f"User  ID: {user_id}, Messages: {data['total_messages']}" for user_id, data in leaderboard])
+        response += "\n".join([f"User   ID: {user_id}, Messages: {data['total_messages']}" for user_id, data in leaderboard])
         graph = generate_horizontal_bar_chart([(user_id, data['total_messages']) for user_id, data in leaderboard], "Today's Leaderboard")
     elif data == "weekly":
         leaderboard = {}
@@ -154,12 +155,12 @@ async def ranking_callback(client, callback_query):
             leaderboard[user_id] = total_messages
         leaderboard = sorted(leaderboard.items(), key=lambda x: x[1], reverse=True)[:10]
         response = "📅 Weekly Top 10 Leaderboard:\n"
-        response += "\n".join([f"User  ID: {user_id}, Messages: {count}" for user_id, count in leaderboard])
+        response += "\n".join([f"User   ID: {user_id}, Messages: {count}" for user_id, count in leaderboard])
         graph = generate_horizontal_bar_chart([(user_id, count) for user_id, count in leaderboard], "Weekly Leaderboard")
     elif data == "overall":
         leaderboard = sorted(overall.items(), key=lambda x: x[1], reverse=True)[:10]
         response = "📈 Overall Top 10 Leaderboard:\n"
-        response += "\n".join([f"User  ID: {user_id}, Messages: {count}" for user_id, count in leaderboard])
+        response += "\n".join([f"User   ID: {user_id}, Messages: {count}" for user_id, count in leaderboard])
         graph = generate_horizontal_bar_chart([(user_id, count) for user_id, count in leaderboard], "Overall Leaderboard")
 
     # Send the leaderboard and the graph
