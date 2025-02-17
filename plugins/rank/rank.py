@@ -2,19 +2,10 @@ from pyrogram import filters
 from pymongo import MongoClient
 from KOKUMUSIC import app
 from pyrogram.types import *
-from pyrogram.errors import MessageNotModified
-from pyrogram.types import InputMediaPhoto
-from typing import Union
-import asyncio
-import random
-import requests
-import os
 import time
-from pyrogram.enums import ChatType
-import config
+import logging
 import matplotlib.pyplot as plt
 import io
-import logging
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from pytz import timezone
 
@@ -32,7 +23,7 @@ except Exception as e:
     logger.error(f"Failed to connect to MongoDB: {e}")
     raise
 
-# In-memory data storage (will also sync with MongoDB)
+# In-memory data storage
 user_data = {}
 today = {}
 weekly = {}
@@ -133,7 +124,7 @@ def today_watcher(_, message):
             today[chat_id][user_id]["total_messages"] += 1
 
         # Save to MongoDB
-        save_today_data_to_db(chat_id, user_id, today[chat_id][user_id]["total_messages"])
+        save_today_data_to_db(chat_id , user_id, today[chat_id][user_id]["total_messages"])
 
         # Track weekly messages
         current_week = time.strftime("%U")
@@ -220,3 +211,5 @@ def generate_horizontal_bar_chart(data, title):
     buf.seek(0)
     plt.close()
     return buf
+
+# 
