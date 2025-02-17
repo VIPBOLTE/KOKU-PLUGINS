@@ -1,17 +1,14 @@
 from pyrogram import Client, filters
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-import matplotlib.pyplot as plt
-import io
 import logging
 import time
 import asyncio
 from datetime import datetime, timedelta
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from pytz import timezone
-import csv
-import json
+import matplotlib.pyplot as plt
+import io
 from KOKUMUSIC import app
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -23,13 +20,11 @@ try:
     client.server_info()  # Test connection
     db = client['Champu']
     rankdb = db['Rankingdb']
-    history_db = db['LeaderboardHistory']
 except ConnectionFailure as e:
     logger.error(f"Failed to connect to MongoDB: {e}")
     raise
 
 # In-memory data storage
-user_data = {}
 today = {}
 weekly = {}
 overall = {}
@@ -42,11 +37,7 @@ scheduler = AsyncIOScheduler(timezone=kolkata_tz)
 
 def reset_weekly_data():
     global weekly
-    current_week = time.strftime("%U")
-    leaderboard = sorted(overall.items(), key=lambda x: x[1], reverse=True)
-    save_leaderboard_history(leaderboard, time.strftime("%Y-%m-%d"))
     weekly = {}
-    reset_weekly_data_in_db()
     logger.info("Weekly data reset successfully.")
 
 scheduler.add_job(reset_weekly_data, 'cron', day_of_week='mon', hour=0, minute=0)
@@ -67,36 +58,6 @@ def save_weekly_data_to_db(chat_id, user_id, week, total_messages):
         {"$set": {"total_messages": total_messages}},
         upsert=True
     )
-
-# Function to reset weekly data in MongoDB
-def reset_weekly_data_in_db():
-    current_week = time.strftime("%U")
-    rankdb.delete_many({"week": current_week})
-    logger.info("Weekly data reset in database successfully.")
-
-# Function to save leaderboard history
-def save_leaderboard_history(leaderboard, date):
-    history_db.insert_one({
-        "date": date,
-        "leaderboard": leaderboard
-    })
-    logger.info(f"Leaderboard data saved for date: {date}")
-
-# Rate limiting decorator
-user_cooldowns = {}
-
-def rate_limit(seconds: int):
-    def decorator(func):
-        async def wrapper(client, message):
-            user_id = message.from_user.id
-            current_time = datetime.now()
-            if user_id in user_cooldowns and current_time < user_cooldowns[user_id]:
-                await message.reply_text(f"Please wait {seconds} seconds before using this command again.")
-                return
-            user_cooldowns[user_id] = current_time + timedelta(seconds=seconds)
-            await func(client, message)
-        return wrapper
-    return decorator
 
 # Watcher for today's messages with MongoDB persistence
 @app.on_message(filters.group & filters.group, group=6)
@@ -135,38 +96,72 @@ def today_watcher(_, message):
     except Exception as e:
         logger.error(f"Error in today_watcher: {e}")
 
-# Command to display today's leaderboard
-@app.on_message(filters.command("today_leaderboard"))
-async def today_leaderboard(_, message):
-    chat_id = message.chat.id
-    leaderboard = sorted(today.get(chat_id, {}).items(), key=lambda x: x[1]["total_messages"], reverse=True)
-    response = "📊 Today's Leaderboard:\n"
-    response += "\n".join([f"User  ID: {user_id}, Messages: {data['total_messages']}" for user_id, data in leaderboard])
-    await message.reply_text(response)
+# Function to generate a horizontal bar chart
+def generate_horizontal_bar_chart(data, title):
+    users = [user[0] for user in data]
+    messages = [user[1] for user in data]
 
-# Command to display weekly leaderboard
-@app.on_message(filters.command("weekly_leaderboard"))
-async def weekly_leaderboard(_, message):
-    chat_id = message.chat.id
-    leaderboard = {}
-    for user_id, weeks in weekly.get(chat_id, {}).items():
-        total_messages = sum(weeks.values())
-        leaderboard[user_id] = total_messages
-    leaderboard = sorted(leaderboard.items(), key=lambda x: x[1], reverse=True)
-    response = "📅 Weekly Leaderboard:\n"
-    response += "\n".join([f"User  ID: {user_id}, Messages: {count}" for user_id, count in leaderboard])
-    await message.reply_text(response)
+    plt.figure(figsize=(10, 6))
+    plt.barh(users, messages, color='skyblue')
+    plt.xlabel('Total Messages')
+    plt.ylabel('Users')
+    plt.title(title)
 
-# Command to display historical leaderboard
-@app.on_message(filters.command("history"))
-async def history(_, message):
-    date = message.text.split()[1] if len(message.text.split()) > 1 else time.strftime("%Y-%m-%d")
-    historical_data = history_db.find_one({"date": date})
-    
-    if historical_data:
-        leaderboard = historical_data['leaderboard']
-        response = "📜 Historical Leaderboard:\n" + "\n".join([f"User  ID: {user_id}, Messages: {count}" for user_id, count in leaderboard])
-    else:
-        response = "No data found for the specified date."
-    
-    await message.reply_text(response)
+    for index, value in enumerate(messages):
+        plt.text(value, index, str(value))
+
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', bbox_inches='tight')
+    buf.seek(0)
+    plt.close()
+    return buf
+
+# Command to display ranking
+@app.on_message(filters.command("ranking"))
+async def ranking(_, message):
+    chat_id = message.chat.id
+    buttons = [
+        [InlineKeyboardButton("Today", callback_data="today"), 
+         InlineKeyboardButton("Weekly", callback_data="weekly"), 
+         InlineKeyboardButton("Overall", callback_data="overall")]
+    ]
+    reply_markup = InlineKeyboardMarkup(buttons)
+    await message.reply_text("Choose a ranking option:", reply_markup=reply_markup)
+
+# Callback query handler for ranking buttons
+@app.on_callback_query(filters.regex("^(today|weekly|overall)$"))
+async def ranking_callback(client, callback_query):
+    chat_id = callback_query.message.chat.id
+    data = callback_query.data
+
+    # Prepare buttons with ✅ for the selected option
+    buttons = [
+        [InlineKeyboardButton(f"Today {'✅' if data == 'today' else ''}", callback_data="today"), 
+         InlineKeyboardButton(f"Weekly {'✅' if data == 'weekly' else ''}", callback_data="weekly"), 
+         InlineKeyboardButton(f"Overall {'✅' if data == 'overall' else ''}", callback_data="overall")]
+    ]
+    reply_markup = InlineKeyboardMarkup(buttons)
+
+    if data == "today":
+        leaderboard = sorted(today.get(chat_id, {}).items(), key=lambda x: x[1]["total_messages"], reverse=True)[:10]
+        response = "📊 Today's Top 10 Leaderboard:\n"
+        response += "\n".join([f"User  ID: {user_id}, Messages: {data['total_messages']}" for user_id, data in leaderboard])
+        graph = generate_horizontal_bar_chart([(user_id, data['total_messages']) for user_id, data in leaderboard], "Today's Leaderboard")
+    elif data == "weekly":
+        leaderboard = {}
+        for user_id, weeks in weekly.get(chat_id, {}).items():
+            total_messages = sum(weeks.values())
+            leaderboard[user_id] = total_messages
+        leaderboard = sorted(leaderboard.items(), key=lambda x: x[1], reverse=True)[:10]
+        response = "📅 Weekly Top 10 Leaderboard:\n"
+        response += "\n".join([f"User  ID: {user_id}, Messages: {count}" for user_id, count in leaderboard])
+        graph = generate_horizontal_bar_chart([(user_id, count) for user_id, count in leaderboard], "Weekly Leaderboard")
+    elif data == "overall":
+        leaderboard = sorted(overall.items(), key=lambda x: x[1], reverse=True)[:10]
+        response = "📈 Overall Top 10 Leaderboard:\n"
+        response += "\n".join([f"User  ID: {user_id}, Messages: {count}" for user_id, count in leaderboard])
+        graph = generate_horizontal_bar_chart([(user_id, count) for user_id, count in leaderboard], "Overall Leaderboard")
+
+    # Send the leaderboard and the graph
+    await callback_query.message.edit_text(response, reply_markup=reply_markup)
+    await callback_query.message.reply_photo(graph)
