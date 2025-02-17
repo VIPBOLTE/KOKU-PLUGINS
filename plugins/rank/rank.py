@@ -122,12 +122,41 @@ def generate_horizontal_bar_chart(data, title):
 async def ranking(_, message):
     chat_id = message.chat.id
     buttons = [
-        [InlineKeyboardButton("Today", callback_data="today"), 
+        [InlineKeyboardButton("Today ✅", callback_data="today"), 
          InlineKeyboardButton("Weekly", callback_data="weekly"), 
          InlineKeyboardButton("Overall", callback_data="overall")]
     ]
     reply_markup = InlineKeyboardMarkup(buttons)
     await message.reply_text("Choose a ranking option:", reply_markup=reply_markup)
+
+    # Automatically show today's leaderboard
+    await show_leaderboard(chat_id, "today")
+
+# Function to show leaderboard based on the selected option
+async def show_leaderboard(chat_id, option):
+    if option == "today":
+        leaderboard = sorted(today.get(chat_id, {}).items(), key=lambda x: x[1]["total_messages"], reverse=True)[:10]
+        response = "📊 Today's Top 10 Leaderboard:\n"
+        response += "\n".join([f"User  ID: {user_id}, Messages: {data['total_messages']}" for user_id, data in leaderboard])
+        graph = generate_horizontal_bar_chart([(user_id, data['total_messages']) for user_id, data in leaderboard], "Today's Leaderboard")
+    elif option == "weekly":
+        leaderboard = {}
+        for user_id, weeks in weekly.get(chat_id, {}).items():
+            total_messages = sum(weeks.values())
+            leaderboard[user_id] = total_messages
+        leaderboard = sorted(leaderboard.items(), key=lambda x: x[1], reverse=True)[:10]
+        response = "📅 Weekly Top 10 Leaderboard:\n"
+        response += "\n".join([f"User  ID: {user_id}, Messages: {count}" for user_id, count in leaderboard])
+        graph = generate_horizontal_bar_chart([(user_id, count) for user_id, count in leaderboard], "Weekly Leaderboard")
+    elif option == "overall":
+        leaderboard = sorted(overall.items(), key=lambda x: x[1], reverse=True)[:10]
+        response = "📈 Overall Top 10 Leaderboard:\n"
+        response += "\n".join([f"User  ID: {user_id}, Messages: {count}" for user_id, count in leaderboard])
+        graph = generate_horizontal_bar_chart([(user_id, count) for user_id, count in leaderboard], "Overall Leaderboard")
+
+    # Send the leaderboard and the graph
+    await message.reply_text(response)
+    await message.reply_photo(graph)
 
 # Callback query handler for ranking buttons
 @app.on_callback_query(filters.regex("^(today|weekly|overall)$"))
@@ -143,26 +172,8 @@ async def ranking_callback(client, callback_query):
     ]
     reply_markup = InlineKeyboardMarkup(buttons)
 
-    if data == "today":
-        leaderboard = sorted(today.get(chat_id, {}).items(), key=lambda x: x[1]["total_messages"], reverse=True)[:10]
-        response = "📊 Today's Top 10 Leaderboard:\n"
-        response += "\n".join([f"User   ID: {user_id}, Messages: {data['total_messages']}" for user_id, data in leaderboard])
-        graph = generate_horizontal_bar_chart([(user_id, data['total_messages']) for user_id, data in leaderboard], "Today's Leaderboard")
-    elif data == "weekly":
-        leaderboard = {}
-        for user_id, weeks in weekly.get(chat_id, {}).items():
-            total_messages = sum(weeks.values())
-            leaderboard[user_id] = total_messages
-        leaderboard = sorted(leaderboard.items(), key=lambda x: x[1], reverse=True)[:10]
-        response = "📅 Weekly Top 10 Leaderboard:\n"
-        response += "\n".join([f"User   ID: {user_id}, Messages: {count}" for user_id, count in leaderboard])
-        graph = generate_horizontal_bar_chart([(user_id, count) for user_id, count in leaderboard], "Weekly Leaderboard")
-    elif data == "overall":
-        leaderboard = sorted(overall.items(), key=lambda x: x[1], reverse=True)[:10]
-        response = "📈 Overall Top 10 Leaderboard:\n"
-        response += "\n".join([f"User   ID: {user_id}, Messages: {count}" for user_id, count in leaderboard])
-        graph = generate_horizontal_bar_chart([(user_id, count) for user_id, count in leaderboard], "Overall Leaderboard")
+    # Show the leaderboard for the selected option
+    await show_leaderboard(chat_id, data)
 
-    # Send the leaderboard and the graph
-    await callback_query.message.edit_text(response, reply_markup=reply_markup)
-    await callback_query.message.reply_photo(graph)
+    # Edit the message to update the buttons
+    await callback_query.message.edit_text("Choose a ranking option:", reply_markup=reply_markup)
