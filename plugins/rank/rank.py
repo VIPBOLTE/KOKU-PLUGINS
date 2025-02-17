@@ -139,10 +139,6 @@ def _watcher(_, message):
     except Exception as e:
         logger.error(f"Error in _watcher: {e}")
 
-        
-    except Exception as e:
-        logger.error(f"Error in _watcher: {e}")
-
 # Function to generate a horizontal bar chart
 def generate_horizontal_bar_chart(data, title):
     try:
@@ -167,42 +163,40 @@ def generate_horizontal_bar_chart(data, title):
         logger.error(f"Error generating graph: {e}")
         return None
 
+# Function to generate leaderboard response and chart
+async def generate_leaderboard(chat_id, leaderboard_data, period="today"):
+    try:
+        if leaderboard_data:
+            sorted_users_data = sorted(leaderboard_data, key=lambda x: x[1], reverse=True)[:10]
+            total_messages_count = sum([user[1] for user in sorted_users_data])
+            response = f"⬤ 📈 ᴛᴏᴛᴀʟ ᴍᴇssᴀɢᴇs ᴏᴠᴇʀ ᴛʜᴇ {period}: {total_messages_count}\n\n"
+
+            for idx, (user_name, total_messages) in enumerate(sorted_users_data, start=1):
+                response += f"{idx}.   {user_name} ➥ {total_messages}\n"
+
+            graph = generate_horizontal_bar_chart([(user_name, total_messages) for user_name, total_messages in sorted_users_data], f"{period.capitalize()} Leaderboard")
+
+            if graph:
+                button = InlineKeyboardMarkup([
+                    [InlineKeyboardButton("ᴡᴇᴇᴋʟʏ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="weekly"),
+                     InlineKeyboardButton("ᴏᴠᴇʀᴀʟʟ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="overall")]
+                ])
+                await message.reply_photo(graph, caption=response, reply_markup=button, has_spoiler=True)
+            else:
+                await message.reply_text("Error generating graph.")
+        else:
+            await message.reply_text(f"❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛʜᴇ {period}.")
+    except Exception as e:
+        logger.error(f"Error in generate_leaderboard: {e}")
+        await message.reply_text(f"An error occurred while processing the {period} leaderboard.")
+
 # Command to display today's leaderboard
 @app.on_message(filters.command("today"))
 async def today_(_, message):
     try:
         chat_id = message.chat.id
         if chat_id in today:
-            users_data = [(user_id, user_data["total_messages"]) for user_id, user_data in today[chat_id].items()]
-            sorted_users_data = sorted(users_data, key=lambda x: x[1], reverse=True)[:10]
-
-            if sorted_users_data:
-                total_messages_count = sum(user_data['total_messages'] for user_data in today[chat_id].values())
-                
-                response = f"⬤ 📈 ᴛᴏᴅᴀʏ ᴛᴏᴛᴀʟ ᴍᴇssᴀɢᴇs: {total_messages_count}\n\n"
-
-                for idx, (user_id, total_messages) in enumerate(sorted_users_data, start=1):
-                    try:
-                        user_name = (await app.get_users(user_id)).first_name
-                    except:
-                        user_name = "Unknown"
-                    user_info = f"{idx}.   {user_name} ➥ {total_messages}\n"
-                    response += user_info
-                
-                # Generate horizontal bar chart
-                graph = generate_horizontal_bar_chart([(user_name, total_messages) for user_id, total_messages in sorted_users_data], "Today's Leaderboard")
-                
-                if graph:
-                    button = InlineKeyboardMarkup(
-                        [[    
-                           InlineKeyboardButton("ᴡᴇᴇᴋʟʏ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="weekly"),
-                           InlineKeyboardButton("ᴏᴠᴇʀᴀʟʟ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="overall"),
-                        ]])
-                    await message.reply_photo(graph, caption=response, reply_markup=button, has_spoiler=True)
-                else:
-                    await message.reply_text("Error generating graph.")
-            else:
-                await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛᴏᴅᴀʏ.")
+            await generate_leaderboard(chat_id, [(user_id, data["total_messages"]) for user_id, data in today[chat_id].items()], "today")
         else:
             await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛᴏᴅᴀʏ.")
     except Exception as e:
@@ -216,46 +210,13 @@ async def weekly_rank(_, message):
         chat_id = message.chat.id
         if chat_id in weekly:
             current_week = time.strftime("%U")
-            users_data = []
-            for user_id, user_data in weekly[chat_id].items():
-                if current_week in user_data:
-                    users_data.append((user_id, user_data[current_week]))
-
-            sorted_users_data = sorted(users_data, key=lambda x: x[1], reverse=True)[:10]
-
-            if sorted_users_data:
-                total_messages_count = sum(user_data[1] for user_data in sorted_users_data)
-                
-                response = f"⬤ 📈 ᴡᴇᴇᴋʟʏ ᴛᴏᴛᴀʟ ᴍᴇssᴀɢᴇs: {total_messages_count}\n\n"
-
-                for idx, (user_id, total_messages) in enumerate(sorted_users_data, start=1):
-                    try:
-                        user_name = (await app.get_users(user_id)).first_name
-                    except:
-                        user_name = "Unknown"
-                    user_info = f"{idx}.   {user_name} ➥ {total_messages}\n"
-                    response += user_info
-                
-                # Generate horizontal bar chart for weekly leaderboard
-                graph = generate_horizontal_bar_chart([(user_name, total_messages) for user_id, total_messages in sorted_users_data], "Weekly Leaderboard")
-                
-                if graph:
-                    button = InlineKeyboardMarkup(
-                        [[    
-                           InlineKeyboardButton("ᴛᴏᴅᴀʏ ʟᴇᴀᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="today"),
-                           InlineKeyboardButton("ᴏᴠᴇʀᴀʟʟ ʟᴇᴀᇎᴇʀʙᴏᴀʀᴅ", callback_data="overall"),
-                        ]])
-                    await message.reply_photo(graph, caption=response, reply_markup=button, has_spoiler=True)
-                else:
-                    await message.reply_text("Error generating graph.")
-            else:
-                await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴡᴇᴇᴋ.")
+            weekly_data = [(user_id, user_data[current_week]) for user_id, user_data in weekly[chat_id].items() if current_week in user_data]
+            await generate_leaderboard(chat_id, weekly_data, "weekly")
         else:
             await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴡᴇᴇᴋ.")
     except Exception as e:
         logger.error(f"Error in weekly_rank command: {e}")
         await message.reply_text("An error occurred while processing the command.")
-
 
 # Command to display overall leaderboard
 @app.on_message(filters.command("overall"))
@@ -263,29 +224,7 @@ async def overall_rank(_, message):
     try:
         # Sorting the overall leaderboard by message count
         sorted_users_data = sorted(overall.items(), key=lambda x: x[1], reverse=True)[:10]
-
-        if sorted_users_data:
-            total_messages_count = sum(messages for user_id, messages in sorted_users_data)
-            
-            response = f"⬤ 📈 ᴏᴠᴇʀᴀʟʟ ᴛᴏᴛᴀʟ ᴍᴇssᴀɢᴇs: {total_messages_count}\n\n"
-
-            for idx, (user_id, total_messages) in enumerate(sorted_users_data, start=1):
-                try:
-                    user_name = (await app.get_users(user_id)).first_name
-                except:
-                    user_name = "Unknown"
-                user_info = f"{idx}.   {user_name} ➥ {total_messages}\n"
-                response += user_info
-            
-            # Generate horizontal bar chart for overall leaderboard
-            graph = generate_horizontal_bar_chart([(user_name, total_messages) for user_id, total_messages in sorted_users_data], "Overall Leaderboard")
-            
-            if graph:
-                await message.reply_photo(graph, caption=response, has_spoiler=True)
-            else:
-                await message.reply_text("Error generating graph.")
-        else:
-            await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴏᴠᴇʀᴀʟʟ.")
+        await generate_leaderboard(None, [(user_name, total_messages) for user_name, total_messages in sorted_users_data], "overall")
     except Exception as e:
         logger.error(f"Error in overall_rank command: {e}")
         await message.reply_text("An error occurred while processing the command.")
