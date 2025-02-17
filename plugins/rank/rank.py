@@ -3,198 +3,203 @@ from pymongo import MongoClient
 from KOKUMUSIC import app
 from pyrogram.types import *
 from pyrogram.errors import MessageNotModified
+from pyrogram.types import (CallbackQuery, InlineKeyboardButton,
+                            InlineKeyboardMarkup, Message)
 from pyrogram.types import InputMediaPhoto
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from typing import Union
+import asyncio
+import random
+import requests
+import os
 import time
-from datetime import datetime, timedelta
-import logging
+from pyrogram.enums import ChatType
+import config
 import matplotlib.pyplot as plt
-from PIL import Image
 import io
+import logging
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# MongoDB connection with error handling
+# MongoDB connection
 try:
     client = MongoClient('mongodb+srv://yash:shivanshudeo@yk.6bvcjqp.mongodb.net/', serverSelectionTimeoutMS=5000)
-    client.server_info()  # Test connection
+    client.server_info()
     db = client['Champu']
     rankdb = db['Rankingdb']
 except Exception as e:
     logger.error(f"Failed to connect to MongoDB: {e}")
     raise
 
-# In-memory data storage (for weekly and daily data)
-user_data_today = {}
-user_data_weekly = {}
+# In-memory data storage
+user_data = {}
+today = {}
 
-# Function to get the current date and time
-def get_current_time():
-    return datetime.now()
+# Watcher for today's messages
+@app.on_message(filters.group & filters.group, group=6)
+def today_watcher(_, message):
+    try:
+        chat_id = message.chat.id
+        user_id = message.from_user.id
+        if chat_id in today and user_id in today[chat_id]:
+            today[chat_id][user_id]["total_messages"] += 1
+        else:
+            if chat_id not in today:
+                today[chat_id] = {}
+            today[chat_id][user_id] = {"total_messages": 1}
+    except Exception as e:
+        logger.error(f"Error in today_watcher: {e}")
 
-# Function to reset daily rankings at midnight
-def reset_daily_data():
-    current_time = get_current_time()
-    # Check if it's midnight, and reset the 'today' rankings if it is
-    if current_time.hour == 0 and current_time.minute == 0:
-        logger.info("Resetting daily data.")
-        user_data_today.clear()
+# Watcher for overall messages
+@app.on_message(filters.group & filters.group, group=11)
+def _watcher(_, message):
+    try:
+        user_id = message.from_user.id    
+        user_data.setdefault(user_id, {}).setdefault("total_messages", 0)
+        user_data[user_id]["total_messages"] += 1    
+        rankdb.update_one({"_id": user_id}, {"$inc": {"total_messages": 1}}, upsert=True)
+    except Exception as e:
+        logger.error(f"Error in _watcher: {e}")
 
-# Function to reset weekly rankings on Sunday
-def reset_weekly_data():
-    current_time = get_current_time()
-    if current_time.weekday() == 6 and current_time.hour == 0 and current_time.minute == 0:
-        logger.info("Resetting weekly data.")
-        user_data_weekly.clear()
-
-# Function to generate a leaderboard graph using PIL and matplotlib
-def generate_leaderboard_image(data, title):
+# Generate horizontal bar chart
+def generate_horizontal_bar_chart(data, title):
     try:
         users = [user[0] for user in data]
         messages = [user[1] for user in data]
         
-        fig, ax = plt.subplots(figsize=(10, 6))
-        ax.barh(users, messages, color='skyblue')
-        ax.set_xlabel('Total Messages')
-        ax.set_ylabel('Users')
-        ax.set_title(title)
+        plt.figure(figsize=(10, 6))
+        plt.barh(users, messages, color='skyblue')
+        plt.xlabel('Total Messages')
+        plt.ylabel('Users')
+        plt.title(title)
         
         for index, value in enumerate(messages):
-            ax.text(value, index, str(value))
+            plt.text(value, index, str(value))
         
-        # Save the plot to a buffer in PNG format
         buf = io.BytesIO()
         plt.savefig(buf, format='png', bbox_inches='tight')
         buf.seek(0)
         plt.close()
-        
-        # Use PIL to open the generated image from buffer
-        img = Image.open(buf)
-        return img
+        return buf
     except Exception as e:
-        logger.error(f"Error generating leaderboard image: {e}")
+        logger.error(f"Error generating graph: {e}")
         return None
 
-# Command to display rankings
+# Command to display leaderboard (default: Overall)
 @app.on_message(filters.command("ranking"))
 async def ranking(_, message):
     try:
-        # Fetch the "Today" leaderboard data
-        sorted_today_data = sorted(user_data_today.items(), key=lambda x: x[1]["total_messages"], reverse=True)[:10]
-        
-        # Prepare the response
-        response = "⬤ 📈 Today's Leaderboard\n\n"
-        users_data = []
-        for idx, (user_id, user_data) in enumerate(sorted_today_data, start=1):
-            user_name = user_data.get("name", "Unknown")
-            total_messages = user_data["total_messages"]
-            response += f"{idx}. {user_name} ➥ {total_messages}\n"
-            users_data.append((user_name, total_messages))
+        # Fetch overall leaderboard
+        top_members = rankdb.find().sort("total_messages", -1).limit(10)
 
-        # Generate the leaderboard image
-        leaderboard_img = generate_leaderboard_image(users_data, "Today's Leaderboard")
+        response = "⬤ 📈 ᴄᴜʀʀᴇɴᴛ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ\n\n"
+        users_data = []
+        for idx, member in enumerate(top_members, start=1):
+            user_id = member["_id"]
+            total_messages = member["total_messages"]
+            try:
+                user_name = (await app.get_users(user_id)).first_name
+            except:
+                user_name = "Unknown"
+            user_info = f"{idx}.   {user_name} ➥ {total_messages}\n"
+            response += user_info
+            users_data.append((user_name, total_messages))
         
-        if leaderboard_img:
-            # Save the image into a buffer
-            buf = io.BytesIO()
-            leaderboard_img.save(buf, format='PNG')
-            buf.seek(0)
-            
-            # Buttons for Today, Weekly, and Overall rankings
-            button = InlineKeyboardMarkup(
+        # Generate chart
+        graph = generate_horizontal_bar_chart(users_data, "Overall Leaderboard")
+        
+        if graph:
+            buttons = InlineKeyboardMarkup(
                 [
                     [
                         InlineKeyboardButton("Today", callback_data="today"),
-                        InlineKeyboardButton("Weekly", callback_data="weekly"),
-                        InlineKeyboardButton("Overall", callback_data="overall"),
+                        InlineKeyboardButton("Overall", callback_data="overall")
                     ]
                 ]
             )
-
-            # Send the image as a reply with the buttons
-            await message.reply_photo(buf, caption=response, reply_markup=button)
+            await message.reply_photo(graph, caption=response, reply_markup=buttons, has_spoiler=True)
         else:
-            await message.reply_text("Error generating leaderboard graph.")
+            await message.reply_text("Error generating graph.")
     except Exception as e:
         logger.error(f"Error in ranking command: {e}")
-        await message.reply_text("An error occurred while processing the ranking.")
+        await message.reply_text("An error occurred.")
 
-@app.on_callback_query(filters.regex("^(today|weekly|overall)$"))
-async def leaderboard_switch(_, query):
+# Callback for Today leaderboard
+@app.on_callback_query(filters.regex("today"))
+async def today_rank(_, query):
     try:
-        # Debug: Check if the callback is triggered
-        logger.info(f"Callback received: {query.data}")
-        
-        ranking_type = query.data
-        if ranking_type == "today":
-            # Handle the "Today" leaderboard
-            sorted_data = sorted(user_data_today.items(), key=lambda x: x[1]["total_messages"], reverse=True)[:10]
-            leaderboard_data = "Today's Leaderboard"
-        elif ranking_type == "weekly":
-            # Handle the "Weekly" leaderboard (similar logic for weekly as for today)
-            sorted_data = sorted(user_data_weekly.items(), key=lambda x: x[1]["total_messages"], reverse=True)[:10]
-            leaderboard_data = "Weekly Leaderboard"
+        chat_id = query.message.chat.id
+        if chat_id in today:
+            users_data = [(user_id, data["total_messages"]) for user_id, data in today[chat_id].items()]
+            sorted_users = sorted(users_data, key=lambda x: x[1], reverse=True)[:10]
+
+            if sorted_users:
+                response = "⬤ 📈 ᴛᴏᴅᴀʏ's ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ\n\n"
+                user_chart_data = []
+                for idx, (user_id, count) in enumerate(sorted_users, start=1):
+                    try:
+                        user_name = (await app.get_users(user_id)).first_name
+                    except:
+                        user_name = "Unknown"
+                    response += f"{idx}.   {user_name} ➥ {count}\n"
+                    user_chart_data.append((user_name, count))
+                
+                # Generate chart
+                graph = generate_horizontal_bar_chart(user_chart_data, "Today's Leaderboard")
+                
+                if graph:
+                    buttons = InlineKeyboardMarkup(
+                        [
+                            [
+                                InlineKeyboardButton("Today", callback_data="today"),
+                                InlineKeyboardButton("Overall", callback_data="overall")
+                            ]
+                        ]
+                    )
+                    await query.message.edit_media(InputMediaPhoto(graph, caption=response), reply_markup=buttons)
+                else:
+                    await query.answer("Error generating chart.")
+            else:
+                await query.answer("No data available for today.")
         else:
-            # Handle the "Overall" leaderboard
-            sorted_data = sorted(rankdb.find().sort("total_messages", -1).limit(10), key=lambda x: x['total_messages'], reverse=True)
-            leaderboard_data = "Overall Leaderboard"
+            await query.answer("No data available for today.")
+    except Exception as e:
+        logger.error(f"Error in today_rank: {e}")
+        await query.answer("An error occurred.")
 
-        response = f"⬤ 📈 {leaderboard_data}\n\n"
-        users_data = []
-        for idx, (user_id, user_data) in enumerate(sorted_data, start=1):
-            user_name = user_data.get("name", "Unknown")
-            total_messages = user_data["total_messages"]
-            response += f"{idx}. {user_name} ➥ {total_messages}\n"
-            users_data.append((user_name, total_messages))
-
-        leaderboard_img = generate_leaderboard_image(users_data, leaderboard_data)
+# Callback for Overall leaderboard
+@app.on_callback_query(filters.regex("overall"))
+async def overall_rank(_, query):
+    try:
+        top_members = rankdb.find().sort("total_messages", -1).limit(10)
+        response = "⬤ 📈 ᴏᴠᴇʀᴀʟʟ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ\n\n"
+        chart_data = []
+        for idx, member in enumerate(top_members, start=1):
+            user_id = member["_id"]
+            total_msg = member["total_messages"]
+            try:
+                user_name = (await app.get_users(user_id)).first_name
+            except:
+                user_name = "Unknown"
+            response += f"{idx}.   {user_name} ➥ {total_msg}\n"
+            chart_data.append((user_name, total_msg))
         
-        if leaderboard_img:
-            buf = io.BytesIO()
-            leaderboard_img.save(buf, format='PNG')
-            buf.seek(0)
-
-            button = InlineKeyboardMarkup(
+        # Generate chart
+        graph = generate_horizontal_bar_chart(chart_data, "Overall Leaderboard")
+        
+        if graph:
+            buttons = InlineKeyboardMarkup(
                 [
                     [
                         InlineKeyboardButton("Today", callback_data="today"),
-                        InlineKeyboardButton("Weekly", callback_data="weekly"),
-                        InlineKeyboardButton("Overall", callback_data="overall"),
+                        InlineKeyboardButton("Overall", callback_data="overall")
                     ]
                 ]
             )
-
-            # Update the message with the new leaderboard image
-            await query.message.edit_media(InputMediaPhoto(buf, caption=response), reply_markup=button)
+            await query.message.edit_media(InputMediaPhoto(graph, caption=response), reply_markup=buttons)
         else:
-            await query.answer("Error generating leaderboard image.")
+            await query.answer("Error generating chart.")
     except Exception as e:
-        logger.error(f"Error in leaderboard switch callback: {e}")
-        await query.answer("An error occurred while processing the callback.")
-
-# Watcher for new messages (updating data)
-@app.on_message(filters.group)
-def message_watcher(_, message):
-    try:
-        user_id = message.from_user.id
-        chat_id = message.chat.id
-        user_name = message.from_user.first_name
-        
-        # Daily message counting
-        user_data_today.setdefault(user_id, {"total_messages": 0, "name": user_name})
-        user_data_today[user_id]["total_messages"] += 1
-
-        # Weekly message counting
-        user_data_weekly.setdefault(user_id, {"total_messages": 0, "name": user_name})
-        user_data_weekly[user_id]["total_messages"] += 1
-        
-        # Store data to MongoDB (overall leaderboard)
-        rankdb.update_one({"_id": user_id}, {"$inc": {"total_messages": 1}}, upsert=True)
-    except Exception as e:
-        logger.error(f"Error in message watcher: {e}")
-
-# Cron job to reset daily and weekly rankings (use a scheduled task, for example with APScheduler)
-# or custom implementation of time checking to reset every midnight.
-
+        logger.error(f"Error in overall_rank: {e}")
+        await query.answer("An error occurred.")
