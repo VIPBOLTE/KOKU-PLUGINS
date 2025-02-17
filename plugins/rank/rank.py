@@ -6,7 +6,22 @@ import pytz
 from datetime import datetime, timedelta
 import asyncio
 from KOKUMUSIC import app
-
+from pyrogram.types import *
+from pyrogram.errors import MessageNotModified
+from pyrogram.types import (CallbackQuery, InlineKeyboardButton,
+                            InlineKeyboardMarkup, Message)
+from pyrogram.types import InputMediaPhoto
+from typing import Union
+import asyncio
+import random
+import requests
+import os
+import time
+from pyrogram.enums import ChatType
+import config
+import matplotlib.pyplot as plt
+import io
+import logging
 # MongoDB setup
 client = MongoClient('mongodb+srv://yash:shivanshudeo@yk.6bvcjqp.mongodb.net/')
 db = client['Champu']
