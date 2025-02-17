@@ -2,8 +2,6 @@ from pyrogram import filters
 from pymongo import MongoClient
 from KOKUMUSIC import app
 from pyrogram.types import *
-from pyrogram.errors import MessageNotModified
-from typing import Union
 import io
 import logging
 import matplotlib.pyplot as plt
@@ -75,80 +73,18 @@ def generate_horizontal_bar_chart(data, title):
         logger.error(f"Error generating graph: {e}")
         return None
 
-# Command to display today's leaderboard
-@app.on_message(filters.command("today"))
-async def today(_, message):
-    try:
-        chat_id = message.chat.id
-        if chat_id in today:
-            users_data = [(user_id, user_data["total_messages"]) for user_id, user_data in today[chat_id].items()]
-            sorted_users_data = sorted(users_data, key=lambda x: x[1], reverse=True)[:10]
-
-            if sorted_users_data:
-                total_messages_count = sum(user_data['total_messages'] for user_data in today[chat_id].values())
-                
-                response = f"⬤ 📈 ᴛᴏᴅᴀʏ ᴛᴏᴛᴀʟ ᴍᴇssᴀɢᴇs: {total_messages_count}\n\n"
-
-                for idx, (user_id, total_messages) in enumerate(sorted_users_data, start=1):
-                    try:
-                        user_name = (await app.get_users(user_id)).first_name
-                    except:
-                        user_name = "Unknown"
-                    user_info = f"{idx}.   {user_name} ➥ {total_messages}\n"
-                    response += user_info
-                
-                # Generate horizontal bar chart
-                graph = generate_horizontal_bar_chart([(user_name, total_messages) for user_id, total_messages in sorted_users_data], "Today's Leaderboard")
-                
-                if graph:
-                    button = InlineKeyboardMarkup(
-                        [[    
-                           InlineKeyboardButton("ᴏᴠᴇʀᴀʟʟ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="overall"),
-                        ]]
-                    )
-                    await message.reply_photo(graph, caption=response, reply_markup=button, has_spoiler=True)
-                else:
-                    await message.reply_text("Error generating graph.")
-            else:
-                await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛᴏᴅᴀʏ.")
-        else:
-            await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛᴏᴅᴀʏ.")
-    except Exception as e:
-        logger.error(f"Error in today_ command: {e}")
-        await message.reply_text("An error occurred while processing the command.")
-
-# Command to display overall leaderboard
+# Command to display overall leaderboard with buttons
 @app.on_message(filters.command("ranking"))
 async def ranking(_, message):
     try:
-        top_members = rankdb.find().sort("total_messages", -1).limit(10)
-
-        response = "⬤ 📈 ᴄᴜʀʀᴇɴᴛ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ\n\n"
-        users_data = []
-        for idx, member in enumerate(top_members, start=1):
-            user_id = member["_id"]
-            total_messages = member["total_messages"]
-            try:
-                user_name = (await app.get_users(user_id)).first_name
-            except:
-                user_name = "Unknown"
-
-            user_info = f"{idx}.   {user_name} ➥ {total_messages}\n"
-            response += user_info
-            users_data.append((user_name, total_messages))
-        
-        # Generate horizontal bar chart
-        graph = generate_horizontal_bar_chart(users_data, "Overall Leaderboard")
-        
-        if graph:
-            button = InlineKeyboardMarkup(
-                    [[    
-                       InlineKeyboardButton("ᴛᴏᴅᴀʏ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="today"),
-                    ]]
-            )
-            await message.reply_photo(graph, caption=response, reply_markup=button, has_spoiler=True)
-        else:
-            await message.reply_text("Error generating graph.")
+        # Create buttons for Today and Overall
+        button = InlineKeyboardMarkup(
+            [
+                [InlineKeyboardButton("ᴛᴏᴅᴀʏ", callback_data="today")],
+                [InlineKeyboardButton("ᴏᴠᴇʀᴀʟʟ", callback_data="overall")]
+            ]
+        )
+        await message.reply_text("⬤ 📈 ᴄʜᴏᴏsᴇ ᴀ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ:", reply_markup=button)
     except Exception as e:
         logger.error(f"Error in ranking command: {e}")
         await message.reply_text("An error occurred while processing the command.")
