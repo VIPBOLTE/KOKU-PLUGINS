@@ -37,6 +37,7 @@ except Exception as e:
 user_data = {}
 today = {}
 weekly = {}
+overall = {}
 
 # Asia/Kolkata timezone
 kolkata_tz = timezone('Asia/Kolkata')
@@ -147,6 +148,7 @@ async def today_(_, message):
                 if graph:
                     button = InlineKeyboardMarkup(
                         [[    
+                           InlineKeyboardButton("ᴡᴇᴇᴋʟʏ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="weekly"),
                            InlineKeyboardButton("ᴏᴠᴇʀᴀʟʟ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="overall"),
                         ]])
                     await message.reply_photo(graph, caption=response, reply_markup=button, has_spoiler=True)
@@ -187,73 +189,25 @@ async def weekly_rank(_, message):
                     user_info = f"{idx}.   {user_name} ➥ {total_messages}\n"
                     response += user_info
                 
-                # Generate horizontal bar chart
+                # Generate horizontal bar chart for weekly leaderboard
                 graph = generate_horizontal_bar_chart([(user_name, total_messages) for user_id, total_messages in sorted_users_data], "Weekly Leaderboard")
                 
                 if graph:
                     button = InlineKeyboardMarkup(
                         [[    
+                           InlineKeyboardButton("ᴛᴏᴅᴀʏ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="today"),
                            InlineKeyboardButton("ᴏᴠᴇʀᴀʟʟ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="overall"),
                         ]])
                     await message.reply_photo(graph, caption=response, reply_markup=button, has_spoiler=True)
                 else:
                     await message.reply_text("Error generating graph.")
             else:
-                await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴡᴇᴇᴋ.")
+                await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴀʏɪ ɴᴀʜɪɴ ᴇᴏᴋ ᴡᴇᴇᴋ ᴅᴇᴏᴛᴀ.")
         else:
             await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴡᴇᴇᴋ.")
     except Exception as e:
         logger.error(f"Error in weekly_rank command: {e}")
         await message.reply_text("An error occurred while processing the command.")
-
-# Callback query for weekly leaderboard
-@app.on_callback_query(filters.regex("weekly"))
-async def weekly_rank_callback(_, query):
-    try:
-        await weekly_rank(_, query.message)
-    except Exception as e:
-        logger.error(f"Error in weekly_rank_callback: {e}")
-        await query.answer("An error occurred while processing the callback.")
-# Global dictionary to store overall messages count
-overall = {}
-
-# Watcher for today's messages (unchanged, this part is fine for your daily tracking)
-@app.on_message(filters.group & filters.group, group=6)
-def today_watcher(_, message):
-    try:
-        chat_id = message.chat.id
-        user_id = message.from_user.id
-        if chat_id in today and user_id in today[chat_id]:
-            today[chat_id][user_id]["total_messages"] += 1
-        else:
-            if chat_id not in today:
-                today[chat_id] = {}
-            if user_id not in today[chat_id]:
-                today[chat_id][user_id] = {"total_messages": 1}
-            else:
-                today[chat_id][user_id]["total_messages"] = 1
-
-        # Track weekly messages (unchanged)
-        current_week = time.strftime("%U")
-        if chat_id not in weekly:
-            weekly[chat_id] = {}
-
-        if user_id not in weekly[chat_id]:
-            weekly[chat_id][user_id] = {current_week: 1}
-        else:
-            if current_week in weekly[chat_id][user_id]:
-                weekly[chat_id][user_id][current_week] += 1
-            else:
-                weekly[chat_id][user_id][current_week] = 1
-
-        # Track overall messages
-        if user_id not in overall:
-            overall[user_id] = 0
-        overall[user_id] += 1
-        rankdb.update_one({"_id": user_id}, {"$inc": {"total_messages": 1}}, upsert=True)
-
-    except Exception as e:
-        logger.error(f"Error in today_watcher: {e}")
 
 # Command to display overall leaderboard
 @app.on_message(filters.command("overall"))
@@ -288,12 +242,17 @@ async def overall_rank(_, message):
         logger.error(f"Error in overall_rank command: {e}")
         await message.reply_text("An error occurred while processing the command.")
 
-# Callback query for overall leaderboard
-@app.on_callback_query(filters.regex("overall"))
-async def overall_rank_callback(_, query):
+# Callback query for today, weekly, and overall leaderboards
+@app.on_callback_query(filters.regex("today|weekly|overall"))
+async def leaderboard_callback(_, query):
     try:
-        await overall_rank(_, query.message)
+        callback_data = query.data
+        if callback_data == "today":
+            await today_(_, query.message)
+        elif callback_data == "weekly":
+            await weekly_rank(_, query.message)
+        elif callback_data == "overall":
+            await overall_rank(_, query.message)
     except Exception as e:
-        logger.error(f"Error in overall_rank_callback: {e}")
+        logger.error(f"Error in leaderboard_callback: {e}")
         await query.answer("An error occurred while processing the callback.")
-    
