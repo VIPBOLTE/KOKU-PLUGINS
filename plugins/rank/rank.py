@@ -1,4 +1,4 @@
-from pyrogram import filters, Client
+from pyrogram import Client, filters
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -10,7 +10,9 @@ import asyncio
 from datetime import datetime, timedelta
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from pytz import timezone
-from KOKUMUSIC import app 
+import csv
+import json
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -40,6 +42,9 @@ scheduler = AsyncIOScheduler(timezone=kolkata_tz)
 
 def reset_weekly_data():
     global weekly
+    current_week = time.strftime("%U")
+    leaderboard = sorted(overall.items(), key=lambda x: x[1], reverse=True)
+    save_leaderboard_history(leaderboard, time.strftime("%Y-%m-%d"))
     weekly = {}
     reset_weekly_data_in_db()
     logger.info("Weekly data reset successfully.")
@@ -68,6 +73,14 @@ def reset_weekly_data_in_db():
     current_week = time.strftime("%U")
     rankdb.delete_many({"week": current_week})
     logger.info("Weekly data reset in database successfully.")
+
+# Function to save leaderboard history
+def save_leaderboard_history(leaderboard, date):
+    history_db.insert_one({
+        "date": date,
+        "leaderboard": leaderboard
+    })
+    logger.info(f"Leaderboard data saved for date: {date}")
 
 # Rate limiting decorator
 user_cooldowns = {}
@@ -111,97 +124,49 @@ def today_watcher(_, message):
         if user_id not in weekly[chat_id]:
             weekly[chat_id][user_id] = {current_week: 1}
         else:
-            if current_week in weekly[chat_id][user_id]:
-                weekly[chat_id][user_id][current_week] += 1
-            else:
+            if current_week not in weekly[chat_id][user_id]:
                 weekly[chat_id][user_id][current_week] = 1
-        
-        # Save to MongoDB
+            else:
+                weekly[chat_id][user_id][current_week] += 1
+
+        # Save weekly data to MongoDB
         save_weekly_data_to_db(chat_id, user_id, current_week, weekly[chat_id][user_id][current_week])
 
     except Exception as e:
         logger.error(f"Error in today_watcher: {e}")
 
-# Update the _watcher function to track overall message count
-@app.on_message(filters.group & filters.group , group=11)
-def _watcher(_, message):
-    try:
-        chat_id = message.chat.id
-        user_id = message.from_user.id
-
-        if user_id not in overall:
-            overall[user_id] = 1
-        else:
-            overall[user_id] += 1
-
-        # Notify user if they reach a new milestone
-        asyncio.create_task(check_rewards(user_id, overall[user_id]))
-
-        # Save overall data to MongoDB
-        rankdb.update_one(
-            {"user_id": user_id},
-            {"$set": {"total_messages": overall[user_id]}},
-            upsert=True
-        )
-
-    except Exception as e:
-        logger.error(f"Error in _watcher: {e}")
-
-# Command to view today's stats
-@app.on_message(filters.command("today"))
-@rate_limit(10)
-async def today_(_, message):
-    user_id = message.from_user.id
+# Command to display today's leaderboard
+@app.on_message(filters.command("today_leaderboard"))
+async def today_leaderboard(_, message):
     chat_id = message.chat.id
-    today_count = today.get(chat_id, {}).get(user_id, {}).get("total_messages", 0)
-    response = f"📅 Today's Messages: {today_count}"
+    leaderboard = sorted(today.get(chat_id, {}).items(), key=lambda x: x[1]["total_messages"], reverse=True)
+    response = "📊 Today's Leaderboard:\n"
+    response += "\n".join([f"User  ID: {user_id}, Messages: {data['total_messages']}" for user_id, data in leaderboard])
     await message.reply_text(response)
 
-# Command to view user profile
-@app.on_message(filters.command("profile"))
-async def profile(_, message):
-    user_id = message.from_user.id
-    today_count = today.get(message.chat.id, {}).get(user_id, {}).get("total_messages", 0)
-    weekly_count = weekly.get(message.chat.id, {}).get(user_id, {}).get(time.strftime("%U"), 0)
-    overall_count = overall.get(user_id, 0)
-    response = f"📊 Your Stats:\nToday: {today_count}\nThis Week: {weekly_count}\nOverall: {overall_count}"
+# Command to display weekly leaderboard
+@app.on_message(filters.command("weekly_leaderboard"))
+async def weekly_leaderboard(_, message):
+    chat_id = message.chat.id
+    leaderboard = {}
+    for user_id, weeks in weekly.get(chat_id, {}).items():
+        total_messages = sum(weeks.values())
+        leaderboard[user_id] = total_messages
+    leaderboard = sorted(leaderboard.items(), key=lambda x: x[1], reverse=True)
+    response = "📅 Weekly Leaderboard:\n"
+    response += "\n".join([f"User  ID: {user_id}, Messages: {count}" for user_id, count in leaderboard])
     await message.reply_text(response)
 
-# Admin command to reset data
-@app.on_message(filters.command("reset_data") & filters.user(ADMIN_IDS))
-async def reset_data(_, message):
-    global today, weekly, overall
-    today = {}
-    weekly = {}
-    overall = {}
-    await message.reply_text("All data has been reset.")
-
-# Command to export leaderboard
-@app.on_message(filters.command("export_leaderboard"))
-async def export_leaderboard(_, message):
-    format = message.text.split()[1] if len(message.text.split()) > 1 else "csv"
-    sorted_users = sorted(overall.items(), key=lambda x: x[1], reverse=True)
-    if format == "csv":
-        with open("leaderboard.csv", "w", newline="") as file:
-            writer = csv.writer(file)
-            writer.writerow(["User  ID", "Messages"])
-            writer.writerows(sorted_users)
-        await message.reply_document("leaderboard.csv")
-    elif format == "json":
-        with open("leaderboard.json", "w") as file:
-            json.dump(dict(sorted_users), file)
-        await message.reply_document("leaderboard.json")
-
-# Function to check rewards
-async def check_rewards(user_id, count):
-    for milestone, reward in rewards.items():
-        if count == milestone:
-            await app.send_message(user_id, f"🎉 You've earned a {reward} for sending {milestone} messages!")
-
-# Command to customize leaderboard
-@app.on_message(filters.command("customize_leaderboard"))
-async def customize_leaderboard(_, message):
-    user_id = message.from_user.id
-    emoji = message.text.split()[1] if len(message.text.split()) > 1 else "👤"
-    user_data[user_id]["emoji"] = emoji
-    await message.reply_text(f"Your leaderboard emoji has been set to {emoji}.")
+# Command to display historical leaderboard
+@app.on_message(filters.command("history"))
+async def history(_, message):
+    date = message.text.split()[1] if len(message.text.split()) > 1 else time.strftime("%Y-%m-%d")
+    historical_data = history_db.find_one({"date": date})
+    
+    if historical_data:
+        leaderboard = historical_data['leaderboard']
+        response = "📜 Historical Leaderboard:\n" + "\n".join([f"User  ID: {user_id}, Messages: {count}" for user_id, count in leaderboard])
+    else:
+        response = "No data found for the specified date."
+    
+    await message.reply_text(response)
