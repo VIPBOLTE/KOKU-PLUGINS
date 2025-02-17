@@ -10,7 +10,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from pytz import timezone
 import matplotlib.pyplot as plt
 import io
-from KOKUMUSIC import app
+from KOKUMUSIC import app 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -137,7 +137,7 @@ async def show_leaderboard(chat_id, message, option):
     if option == "today":
         leaderboard = sorted(today.get(chat_id, {}).items(), key=lambda x: x[1]["total_messages"], reverse=True)[:10]
         response = "📊 Today's Top 10 Leaderboard:\n"
-        response += "\n".join([f"User  ID: {user_id}, Messages: {data['total_messages']}" for user_id, data in leaderboard])
+        response += "\n".join([f"[{user_id}](tg://user?id={user_id}): {data['total_messages']}" for user_id, data in leaderboard])
         graph = generate_horizontal_bar_chart([(user_id, data['total_messages']) for user_id, data in leaderboard], "Today's Leaderboard")
     elif option == "weekly":
         leaderboard = {}
@@ -146,16 +146,16 @@ async def show_leaderboard(chat_id, message, option):
             leaderboard[user_id] = total_messages
         leaderboard = sorted(leaderboard.items(), key=lambda x: x[1], reverse=True)[:10]
         response = "📅 Weekly Top 10 Leaderboard:\n"
-        response += "\n".join([f"User  ID: {user_id}, Messages: {count}" for user_id, count in leaderboard])
+        response += "\n".join([f"[{user_id}](tg://user?id={user_id}): {count}" for user_id, count in leaderboard])
         graph = generate_horizontal_bar_chart([(user_id, count) for user_id, count in leaderboard], "Weekly Leaderboard")
     elif option == "overall":
         leaderboard = sorted(overall.items(), key=lambda x: x[1], reverse=True)[:10]
         response = "📈 Overall Top 10 Leaderboard:\n"
-        response += "\n".join([f"User  ID: {user_id}, Messages: {count}" for user_id, count in leaderboard])
+        response += "\n".join([f"[{user_id}](tg://user?id={user_id}): {count}" for user_id, count in leaderboard])
         graph = generate_horizontal_bar_chart([(user_id, count) for user_id, count in leaderboard], "Overall Leaderboard")
 
-    # Send the leaderboard and the graph
-    await message.reply_text(response)
+    # Edit the message to show the leaderboard and the graph
+    await message.edit_text(response)
     await message.reply_photo(graph)
 
 # Callback query handler for ranking buttons
@@ -177,3 +177,5 @@ async def ranking_callback(client, callback_query):
 
     # Edit the message to update the buttons
     await callback_query.message.edit_text("Choose a ranking option:", reply_markup=reply_markup)
+
+# Start the bot
