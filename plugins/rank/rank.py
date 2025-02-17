@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 # MongoDB connection with error handling
 try:
-    client = MongoClient('mongodb+srv://your_mongodb_url')
+    client = MongoClient('mongodb+srv://yash:shivanshudeo@yk.6bvcjqp.mongodb.net/')
     client.server_info()  # Test connection
     db = client['Champu']
     rankdb = db['Rankingdb']
