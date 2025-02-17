@@ -130,10 +130,10 @@ async def ranking(_, message):
     await message.reply_text("Choose a ranking option:", reply_markup=reply_markup)
 
     # Automatically show today's leaderboard
-    await show_leaderboard(chat_id, "today")
+    await show_leaderboard(chat_id, message, "today")
 
 # Function to show leaderboard based on the selected option
-async def show_leaderboard(chat_id, option):
+async def show_leaderboard(chat_id, message, option):
     if option == "today":
         leaderboard = sorted(today.get(chat_id, {}).items(), key=lambda x: x[1]["total_messages"], reverse=True)[:10]
         response = "📊 Today's Top 10 Leaderboard:\n"
@@ -173,7 +173,7 @@ async def ranking_callback(client, callback_query):
     reply_markup = InlineKeyboardMarkup(buttons)
 
     # Show the leaderboard for the selected option
-    await show_leaderboard(chat_id, data)
+    await show_leaderboard(chat_id, callback_query.message, data)
 
     # Edit the message to update the buttons
     await callback_query.message.edit_text("Choose a ranking option:", reply_markup=reply_markup)
