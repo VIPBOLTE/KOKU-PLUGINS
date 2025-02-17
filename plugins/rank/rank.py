@@ -3,20 +3,10 @@ from pymongo import MongoClient
 from KOKUMUSIC import app
 from pyrogram.types import *
 from pyrogram.errors import MessageNotModified
-from pyrogram.types import (CallbackQuery, InlineKeyboardButton,
-                            InlineKeyboardMarkup, Message)
-from pyrogram.types import InputMediaPhoto
 from typing import Union
-import asyncio
-import random
-import requests
-import os
-import time
-from pyrogram.enums import ChatType
-import config
-import matplotlib.pyplot as plt
 import io
 import logging
+import matplotlib.pyplot as plt
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -37,25 +27,21 @@ user_data = {}
 today = {}
 
 # Watcher for today's messages
-@app.on_message(filters.group & filters.group, group=6)
+@app.on_message(filters.group)
 def today_watcher(_, message):
     try:
         chat_id = message.chat.id
         user_id = message.from_user.id
-        if chat_id in today and user_id in today[chat_id]:
-            today[chat_id][user_id]["total_messages"] += 1
-        else:
-            if chat_id not in today:
-                today[chat_id] = {}
-            if user_id not in today[chat_id]:
-                today[chat_id][user_id] = {"total_messages": 1}
-            else:
-                today[chat_id][user_id]["total_messages"] = 1
+        if chat_id not in today:
+            today[chat_id] = {}
+        if user_id not in today[chat_id]:
+            today[chat_id][user_id] = {"total_messages": 0}
+        today[chat_id][user_id]["total_messages"] += 1
     except Exception as e:
         logger.error(f"Error in today_watcher: {e}")
 
 # Watcher for overall messages
-@app.on_message(filters.group & filters.group, group=11)
+@app.on_message(filters.group)
 def _watcher(_, message):
     try:
         user_id = message.from_user.id    
@@ -91,7 +77,7 @@ def generate_horizontal_bar_chart(data, title):
 
 # Command to display today's leaderboard
 @app.on_message(filters.command("today"))
-async def today_(_, message):
+async def today(_, message):
     try:
         chat_id = message.chat.id
         if chat_id in today:
@@ -118,7 +104,8 @@ async def today_(_, message):
                     button = InlineKeyboardMarkup(
                         [[    
                            InlineKeyboardButton("ᴏᴠᴇʀᴀʟʟ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="overall"),
-                        ]])
+                        ]]
+                    )
                     await message.reply_photo(graph, caption=response, reply_markup=button, has_spoiler=True)
                 else:
                     await message.reply_text("Error generating graph.")
@@ -134,14 +121,34 @@ async def today_(_, message):
 @app.on_message(filters.command("ranking"))
 async def ranking(_, message):
     try:
-        # Create buttons for Today and Overall
-        button = InlineKeyboardMarkup(
-            [
-                [InlineKeyboardButton("ᴛᴏᴅᴀʏ", callback_data="today")],
-                [InlineKeyboardButton("ᴏᴠᴇʀᴀʟʟ", callback_data="overall")]
-            ]
-        )
-        await message.reply_text("⬤ 📈 ᴄʜᴏᴏsᴇ ᴀ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ:", reply_markup=button)
+        top_members = rankdb.find().sort("total_messages", -1).limit(10)
+
+        response = "⬤ 📈 ᴄᴜʀʀᴇɴᴛ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ\n\n"
+        users_data = []
+        for idx, member in enumerate(top_members, start=1):
+            user_id = member["_id"]
+            total_messages = member["total_messages"]
+            try:
+                user_name = (await app.get_users(user_id)).first_name
+            except:
+                user_name = "Unknown"
+
+            user_info = f"{idx}.   {user_name} ➥ {total_messages}\n"
+            response += user_info
+            users_data.append((user_name, total_messages))
+        
+        # Generate horizontal bar chart
+        graph = generate_horizontal_bar_chart(users_data, "Overall Leaderboard")
+        
+        if graph:
+            button = InlineKeyboardMarkup(
+                    [[    
+                       InlineKeyboardButton("ᴛᴏᴅᴀʏ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="today"),
+                    ]]
+            )
+            await message.reply_photo(graph, caption=response, reply_markup=button, has_spoiler=True)
+        else:
+            await message.reply_text("Error generating graph.")
     except Exception as e:
         logger.error(f"Error in ranking command: {e}")
         await message.reply_text("An error occurred while processing the command.")
@@ -172,12 +179,13 @@ async def today_rank(_, query):
                     button = InlineKeyboardMarkup(
                         [[    
                            InlineKeyboardButton("ᴏᴠᴇʀᴀʟʟ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="overall"),
-                        ]])
+                        ]]
+                    )
                     await query.message.edit_media(InputMediaPhoto(graph, caption=response), reply_markup=button)
                 else:
                     await query.answer("Error generating graph.")
             else:
-                await query.answer("❅ ɴᴏ �ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛᴏᴅᴀʏ.")
+                await query.answer("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛᴏᴅᴀʏ.")
         else:
             await query.answer("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛᴏᴅᴀʏ.")
     except Exception as e:
@@ -211,7 +219,8 @@ async def overall_rank(_, query):
             button = InlineKeyboardMarkup(
                     [[    
                        InlineKeyboardButton("ᴛᴏᴅᴀʏ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="today"),
-                    ]])
+                    ]]
+            )
             await query.message.edit_media(InputMediaPhoto(graph, caption=response), reply_markup=button)
         else:
             await query.answer("Error generating graph.")
