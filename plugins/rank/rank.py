@@ -243,6 +243,34 @@ async def weekly_rank(_, message):
         logger.error(f"Error in weekly_rank command: {e}")
         await message.reply_text("An error occurred while processing the command.")
 
+# Define a global variable to track overall message counts
+overall = {}
+
+# Update the _watcher function to track overall message count
+@app.on_message(filters.group & filters.group, group=11)
+def _watcher(_, message):
+    try:
+        user_id = message.from_user.id    
+        user_data.setdefault(user_id, {}).setdefault("total_messages", 0)
+        user_data[user_id]["total_messages"] += 1    
+        rankdb.update_one({"_id": user_id}, {"$inc": {"total_messages": 1}}, upsert=True)
+        
+        # Save overall data to MongoDB
+        rankdb.update_one(
+            {"_id": user_id},
+            {"$inc": {"total_messages": 1}},
+            upsert=True
+        )
+        
+        # Update overall dictionary
+        if user_id not in overall:
+            overall[user_id] = 1
+        else:
+            overall[user_id] += 1
+        
+    except Exception as e:
+        logger.error(f"Error in _watcher: {e}")
+
 # Command to display overall leaderboard
 @app.on_message(filters.command("overall"))
 async def overall_rank(_, message):
