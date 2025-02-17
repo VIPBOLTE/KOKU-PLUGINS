@@ -3,7 +3,6 @@ from pymongo import MongoClient
 from KOKUMUSIC import app
 from pyrogram.types import *
 from pyrogram.errors import MessageNotModified
-from pyrogram.types import (CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message)
 from pyrogram.types import InputMediaPhoto
 from typing import Union
 import asyncio
@@ -33,11 +32,10 @@ except Exception as e:
     logger.error(f"Failed to connect to MongoDB: {e}")
     raise
 
-# In-memory data storage
+# In-memory data storage (will also sync with MongoDB)
 user_data = {}
 today = {}
 weekly = {}
-overall = {}
 
 # Asia/Kolkata timezone
 kolkata_tz = timezone('Asia/Kolkata')
@@ -48,29 +46,54 @@ scheduler = AsyncIOScheduler(timezone=kolkata_tz)
 def reset_weekly_data():
     global weekly
     weekly = {}
+    reset_weekly_data_in_db()
     logger.info("Weekly data reset successfully.")
 
 scheduler.add_job(reset_weekly_data, 'cron', day_of_week='mon', hour=0, minute=0)
 scheduler.start()
 
-# Watcher for today's messages
+# Function to save today's data to MongoDB
+def save_today_data_to_db(chat_id, user_id, total_messages):
+    rankdb.update_one(
+        {"chat_id": chat_id, "user_id": user_id, "date": time.strftime("%Y-%m-%d")},
+        {"$set": {"total_messages": total_messages}},
+        upsert=True
+    )
+
+# Function to save weekly data to MongoDB
+def save_weekly_data_to_db(chat_id, user_id, week, total_messages):
+    rankdb.update_one(
+        {"chat_id": chat_id, "user_id": user_id, "week": week},
+        {"$set": {"total_messages": total_messages}},
+        upsert=True
+    )
+
+# Function to reset weekly data in MongoDB
+def reset_weekly_data_in_db():
+    current_week = time.strftime("%U")
+    rankdb.delete_many({"week": current_week})
+    logger.info("Weekly data reset in database successfully.")
+
+# Watcher for today's messages with MongoDB persistence
 @app.on_message(filters.group & filters.group, group=6)
 def today_watcher(_, message):
     try:
         chat_id = message.chat.id
         user_id = message.from_user.id
-        if chat_id in today and user_id in today[chat_id]:
-            today[chat_id][user_id]["total_messages"] += 1
+
+        if chat_id not in today:
+            today[chat_id] = {}
+
+        if user_id not in today[chat_id]:
+            today[chat_id][user_id] = {"total_messages": 1}
         else:
-            if chat_id not in today:
-                today[chat_id] = {}
-            if user_id not in today[chat_id]:
-                today[chat_id][user_id] = {"total_messages": 1}
-            else:
-                today[chat_id][user_id]["total_messages"] = 1
+            today[chat_id][user_id]["total_messages"] += 1
+
+        # Save to MongoDB
+        save_today_data_to_db(chat_id, user_id, today[chat_id][user_id]["total_messages"])
 
         # Track weekly messages
-        current_week = time.strftime("%U")  # Get the current week number
+        current_week = time.strftime("%U")
         if chat_id not in weekly:
             weekly[chat_id] = {}
 
@@ -81,11 +104,14 @@ def today_watcher(_, message):
                 weekly[chat_id][user_id][current_week] += 1
             else:
                 weekly[chat_id][user_id][current_week] = 1
+        
+        # Save to MongoDB
+        save_weekly_data_to_db(chat_id, user_id, current_week, weekly[chat_id][user_id][current_week])
 
     except Exception as e:
         logger.error(f"Error in today_watcher: {e}")
 
-# Watcher for overall messages
+# Watcher for overall messages with MongoDB persistence
 @app.on_message(filters.group & filters.group, group=11)
 def _watcher(_, message):
     try:
@@ -93,6 +119,14 @@ def _watcher(_, message):
         user_data.setdefault(user_id, {}).setdefault("total_messages", 0)
         user_data[user_id]["total_messages"] += 1    
         rankdb.update_one({"_id": user_id}, {"$inc": {"total_messages": 1}}, upsert=True)
+        
+        # Save overall data to MongoDB
+        rankdb.update_one(
+            {"_id": user_id},
+            {"$inc": {"total_messages": 1}},
+            upsert=True
+        )
+        
     except Exception as e:
         logger.error(f"Error in _watcher: {e}")
 
@@ -195,14 +229,14 @@ async def weekly_rank(_, message):
                 if graph:
                     button = InlineKeyboardMarkup(
                         [[    
-                           InlineKeyboardButton("ᴛᴏᴅᴀʏ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="today"),
-                           InlineKeyboardButton("ᴏᴠᴇʀᴀʟʟ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="overall"),
+                           InlineKeyboardButton("ᴛᴏᴅᴀʏ ʟᴇᴀᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="today"),
+                           InlineKeyboardButton("ᴏᴠᴇʀᴀʟʟ ʟᴇᴀᇎᴇʀʙᴏᴀʀᴅ", callback_data="overall"),
                         ]])
                     await message.reply_photo(graph, caption=response, reply_markup=button, has_spoiler=True)
                 else:
                     await message.reply_text("Error generating graph.")
             else:
-                await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴀʏɪ ɴᴀʜɪɴ ᴇᴏᴋ ᴡᴇᴇᴋ ᴅᴇᴏᴛᴀ.")
+                await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴡᴇᴇᴋ.")
         else:
             await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴡᴇᴇᴋ.")
     except Exception as e:
@@ -241,18 +275,3 @@ async def overall_rank(_, message):
     except Exception as e:
         logger.error(f"Error in overall_rank command: {e}")
         await message.reply_text("An error occurred while processing the command.")
-
-# Callback query for today, weekly, and overall leaderboards
-@app.on_callback_query(filters.regex("today|weekly|overall"))
-async def leaderboard_callback(_, query):
-    try:
-        callback_data = query.data
-        if callback_data == "today":
-            await today_(_, query.message)
-        elif callback_data == "weekly":
-            await weekly_rank(_, query.message)
-        elif callback_data == "overall":
-            await overall_rank(_, query.message)
-    except Exception as e:
-        logger.error(f"Error in leaderboard_callback: {e}")
-        await query.answer("An error occurred while processing the callback.")
