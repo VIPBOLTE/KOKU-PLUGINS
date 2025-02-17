@@ -36,6 +36,49 @@ except Exception as e:
 user_data = {}
 today = {}
 weekly = {}
+overall = {}
+
+# Load data from MongoDB on startup
+def load_data_from_db():
+    global today, weekly, overall
+    try:
+        # Load today's data
+        today_data = rankdb.find({"date": time.strftime("%Y-%m-%d")})
+        for doc in today_data:
+            chat_id = doc["chat_id"]
+            user_id = doc["user_id"]
+            total_messages = doc["total_messages"]
+            if chat_id not in today:
+                today[chat_id] = {}
+            today[chat_id][user_id] = {"total_messages": total_messages}
+
+        # Load weekly data
+        current_week = time.strftime("%U")
+        weekly_data = rankdb.find({"week": current_week})
+        for doc in weekly_data:
+            chat_id = doc["chat_id"]
+            user_id = doc["user_id"]
+            total_messages = doc["total_messages"]
+            if chat_id not in weekly:
+                weekly[chat_id] = {}
+            if user_id not in weekly[chat_id]:
+                weekly[chat_id][user_id] = {current_week: total_messages}
+            else:
+                weekly[chat_id][user_id][current_week] = total_messages
+
+        # Load overall data
+        overall_data = rankdb.find({})
+        for doc in overall_data:
+            user_id = doc["_id"]
+            total_messages = doc["total_messages"]
+            overall[user_id] = total_messages
+
+        logger.info("Data loaded from MongoDB successfully.")
+    except Exception as e:
+        logger.error(f"Error loading data from MongoDB: {e}")
+
+# Load data when the bot starts
+load_data_from_db()
 
 # Asia/Kolkata timezone
 kolkata_tz = timezone('Asia/Kolkata')
@@ -111,9 +154,6 @@ def today_watcher(_, message):
     except Exception as e:
         logger.error(f"Error in today_watcher: {e}")
 
-# Define a global variable to track overall message counts
-overall = {}
-
 # Update the _watcher function to track overall message count
 @app.on_message(filters.group & filters.group, group=11)
 def _watcher(_, message):
@@ -121,7 +161,7 @@ def _watcher(_, message):
         user_id = message.from_user.id    
         user_data.setdefault(user_id, {}).setdefault("total_messages", 0)
         user_data[user_id]["total_messages"] += 1    
-        rankdb.update_one({"_id": user_id}, {"$inc": {"total_messages": 1}}, up date=True)
+        rankdb.update_one({"_id": user_id}, {"$inc": {"total_messages": 1}}, upsert=True)
 
         # Update overall message count
         overall[user_id] = overall.get(user_id, 0) + 1
