@@ -121,10 +121,12 @@ async def ranking(_, message):
         logger.error(f"Error in ranking command: {e}")
         await message.reply_text("An error occurred while processing the ranking.")
 
-# Callback query for switching between Today, Weekly, and Overall rankings
 @app.on_callback_query(filters.regex("^(today|weekly|overall)$"))
 async def leaderboard_switch(_, query):
     try:
+        # Debug: Check if the callback is triggered
+        logger.info(f"Callback received: {query.data}")
+        
         ranking_type = query.data
         if ranking_type == "today":
             # Handle the "Today" leaderboard
@@ -147,7 +149,6 @@ async def leaderboard_switch(_, query):
             response += f"{idx}. {user_name} ➥ {total_messages}\n"
             users_data.append((user_name, total_messages))
 
-        # Generate the leaderboard image
         leaderboard_img = generate_leaderboard_image(users_data, leaderboard_data)
         
         if leaderboard_img:
@@ -155,7 +156,6 @@ async def leaderboard_switch(_, query):
             leaderboard_img.save(buf, format='PNG')
             buf.seek(0)
 
-            # Buttons for switching between Today, Weekly, and Overall rankings
             button = InlineKeyboardMarkup(
                 [
                     [
