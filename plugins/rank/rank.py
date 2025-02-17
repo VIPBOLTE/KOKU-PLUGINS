@@ -10,7 +10,7 @@ import asyncio
 from datetime import datetime, timedelta
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from pytz import timezone
-
+from KOKUMUSIC import app 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
