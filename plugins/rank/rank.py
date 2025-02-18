@@ -1,6 +1,6 @@
 from pyrogram import filters
 from pymongo import MongoClient
-from KOKUMUSIC import app
+from KOKUMUISC import app
 from pyrogram.types import *
 from pyrogram.errors import MessageNotModified
 from pyrogram.types import InputMediaPhoto
@@ -10,13 +10,11 @@ import random
 import requests
 import os
 import time
-from pyrogram.enums import ChatType
-import config
-import matplotlib.pyplot as plt
-import io
 import logging
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from pytz import timezone
+import matplotlib.pyplot as plt
+import io
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -36,6 +34,7 @@ except Exception as e:
 user_data = {}
 today = {}
 weekly = {}
+overall = {}
 
 # Asia/Kolkata timezone
 kolkata_tz = timezone('Asia/Kolkata')
@@ -111,9 +110,6 @@ def today_watcher(_, message):
     except Exception as e:
         logger.error(f"Error in today_watcher: {e}")
 
-# Define a global variable to track overall message counts
-overall = {}
-
 # Update the _watcher function to track overall message count
 @app.on_message(filters.group & filters.group, group=11)
 def _watcher(_, message):
@@ -123,22 +119,11 @@ def _watcher(_, message):
         user_data[user_id]["total_messages"] += 1    
         rankdb.update_one({"_id": user_id}, {"$inc": {"total_messages": 1}}, upsert=True)
         
-        # Save overall data to MongoDB
-        rankdb.update_one(
-            {"_id": user_id},
-            {"$inc": {"total_messages": 1}},
-            upsert=True
-        )
-        
         # Update overall dictionary
         if user_id not in overall:
             overall[user_id] = 1
         else:
             overall[user_id] += 1
-        
-    except Exception as e:
-        logger.error(f"Error in _watcher: {e}")
-
         
     except Exception as e:
         logger.error(f"Error in _watcher: {e}")
@@ -167,101 +152,11 @@ def generate_horizontal_bar_chart(data, title):
         logger.error(f"Error generating graph: {e}")
         return None
 
-# Command to display today's leaderboard
-@app.on_message(filters.command("today"))
-async def today_(_, message):
+# Command to display rankings
+@app.on_message(filters.command("ranking"))
+async def rankin(_, message):
     try:
-        chat_id = message.chat.id
-        if chat_id in today:
-            users_data = [(user_id, user_data["total_messages"]) for user_id, user_data in today[chat_id].items()]
-            sorted_users_data = sorted(users_data, key=lambda x: x[1], reverse=True)[:10]
-
-            if sorted_users_data:
-                total_messages_count = sum(user_data['total_messages'] for user_data in today[chat_id].values())
-                
-                response = f"⬤ 📈 ᴛᴏᴅᴀʏ ᴛᴏᴛᴀʟ ᴍᴇssᴀɢᴇs: {total_messages_count}\n\n"
-
-                for idx, (user_id, total_messages) in enumerate(sorted_users_data, start=1):
-                    try:
-                        user_name = (await app.get_users(user_id)).first_name
-                    except:
-                        user_name = "Unknown"
-                    user_info = f"{idx}.   {user_name} ➥ {total_messages}\n"
-                    response += user_info
-                
-                # Generate horizontal bar chart
-                graph = generate_horizontal_bar_chart([(user_name, total_messages) for user_id, total_messages in sorted_users_data], "Today's Leaderboard")
-                
-                if graph:
-                    button = InlineKeyboardMarkup(
-                        [[    
-                           InlineKeyboardButton("ᴡᴇᴇᴋʟʏ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="weekly"),
-                           InlineKeyboardButton("ᴏᴠᴇʀᴀʟʟ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="overall"),
-                        ]])
-                    await message.reply_photo(graph, caption=response, reply_markup=button, has_spoiler=True)
-                else:
-                    await message.reply_text("Error generating graph.")
-            else:
-                await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛᴏᴅᴀʏ.")
-        else:
-            await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛᴏᴅᴀʏ.")
-    except Exception as e:
-        logger.error(f"Error in today_ command: {e}")
-        await message.reply_text("An error occurred while processing the command.")
-
-# Command to display weekly leaderboard
-@app.on_message(filters.command("weekly"))
-async def weekly_rank(_, message):
-    try:
-        chat_id = message.chat.id
-        if chat_id in weekly:
-            current_week = time.strftime("%U")
-            users_data = []
-            for user_id, user_data in weekly[chat_id].items():
-                if current_week in user_data:
-                    users_data.append((user_id, user_data[current_week]))
-
-            sorted_users_data = sorted(users_data, key=lambda x: x[1], reverse=True)[:10]
-
-            if sorted_users_data:
-                total_messages_count = sum(user_data[1] for user_data in sorted_users_data)
-                
-                response = f"⬤ 📈 ᴡᴇᴇᴋʟʏ ᴛᴏᴛᴀʟ ᴍᴇssᴀɢᴇs: {total_messages_count}\n\n"
-
-                for idx, (user_id, total_messages) in enumerate(sorted_users_data, start=1):
-                    try:
-                        user_name = (await app.get_users(user_id)).first_name
-                    except:
-                        user_name = "Unknown"
-                    user_info = f"{idx}.   {user_name} ➥ {total_messages}\n"
-                    response += user_info
-                
-                # Generate horizontal bar chart for weekly leaderboard
-                graph = generate_horizontal_bar_chart([(user_name, total_messages) for user_id, total_messages in sorted_users_data], "Weekly Leaderboard")
-                
-                if graph:
-                    button = InlineKeyboardMarkup(
-                        [[    
-                           InlineKeyboardButton("ᴛᴏᴅᴀʏ ʟᴇᴀᴀᴅᴇʀʙᴏᴀʀᴅ", callback_data="today"),
-                           InlineKeyboardButton("ᴏᴠᴇʀᴀʟʟ ʟᴇᴀᇎᴇʀʙᴏᴀʀᴅ", callback_data="overall"),
-                        ]])
-                    await message.reply_photo(graph, caption=response, reply_markup=button, has_spoiler=True)
-                else:
-                    await message.reply_text("Error generating graph.")
-            else:
-                await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴡᴇᴇᴋ.")
-        else:
-            await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴡᴇᴇᴋ.")
-    except Exception as e:
-        logger.error(f"Error in weekly_rank command: {e}")
-        await message.reply_text("An error occurred while processing the command.")
-
-
-# Command to display overall leaderboard
-@app.on_message(filters.command("overall"))
-async def overall_rank(_, message):
-    try:
-        # Sorting the overall leaderboard by message count
+        # Default to overall ranking
         sorted_users_data = sorted(overall.items(), key=lambda x: x[1], reverse=True)[:10]
 
         if sorted_users_data:
@@ -281,11 +176,148 @@ async def overall_rank(_, message):
             graph = generate_horizontal_bar_chart([(user_name, total_messages) for user_id, total_messages in sorted_users_data], "Overall Leaderboard")
             
             if graph:
-                await message.reply_photo(graph, caption=response, has_spoiler=True)
+                button = InlineKeyboardMarkup(
+                    [[    
+                       InlineKeyboardButton("ᴏᴠᴇʀᴀʟʟ ✅", callback_data="overall"),
+                       InlineKeyboardButton("ᴡᴇᴇᴋʟʏ", callback_data="weekly"),
+                    ],
+                    [
+                       InlineKeyboardButton("ᴛᴏᴅᴀʏ", callback_data="today"),
+                    ]]
+                )
+                await message.reply_photo(graph, caption=response, reply_markup=button)
             else:
                 await message.reply_text("Error generating graph.")
         else:
             await message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴏᴠᴇʀᴀʟʟ.")
     except Exception as e:
-        logger.error(f"Error in overall_rank command: {e}")
+        logger.error(f"Error in rankin command: {e}")
         await message.reply_text("An error occurred while processing the command.")
+
+@app.on_callback_query(filters.regex(r"^overall"))
+async def overall_callback(client, callback_query):
+    await asyncio.sleep(1)  # Sleep for 1 second
+    chat_id = callback_query.message.chat.id
+    sorted_users_data = sorted(overall.items(), key=lambda x: x[1], reverse=True)[:10]
+
+    if sorted_users_data:
+        total_messages_count = sum(messages for user_id, messages in sorted_users_data)
+        
+        response = f"⬤ 📈 ᴏᴠᴇʀᴀʟʟ ᴛᴏᴛᴀʟ ᴍᴇssᴀɢᴇs: {total_messages_count}\n\n"
+
+        for idx, (user_id, total_messages) in enumerate(sorted_users_data, start=1):
+            try:
+                user_name = (await app.get_users(user_id)).first_name
+            except:
+                user_name = "Unknown"
+            user_info = f"{idx}.   {user_name} ➥ {total_messages}\n"
+            response += user_info
+        
+        graph = generate_horizontal_bar_chart([(user_name, total_messages) for user_id, total_messages in sorted_users_data], "Overall Leaderboard")
+        
+        if graph:
+            button = InlineKeyboardMarkup(
+                [[    
+                   InlineKeyboardButton("ᴏᴠᴇʀᴀʟʟ ✅", callback_data="overall"),
+                   InlineKeyboardButton("ᴡᴇᴇᴋʟʏ", callback_data="weekly"),
+                ],
+                [
+                   InlineKeyboardButton("ᴛᴏᴅᴀʏ", callback_data="today"),
+                ]]
+            )
+            await callback_query.message.edit_media(media=InputMediaPhoto(graph))
+            await callback_query.message.edit_text(response, reply_markup=button)
+        else:
+            await callback_query.message.reply_text("Error generating graph.")
+    else:
+        await callback_query.message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴏᴠᴇʀᴀʟʟ.")
+
+
+@app.on_callback_query(filters.regex(r"^weekly"))
+async def weekly_callback(client, callback_query):
+    await asyncio.sleep(1)  # Sleep for 1 second
+    chat_id = callback_query.message.chat.id
+    if chat_id in weekly:
+        current_week = time.strftime("%U")
+        users_data = []
+        for user_id, user_data in weekly[chat_id].items():
+            if current_week in user_data:
+                users_data.append((user_id, user_data[current_week]))
+
+        sorted_users_data = sorted(users_data, key=lambda x: x[1], reverse=True)[:10]
+
+        if sorted_users_data:
+            total_messages_count = sum(user_data[1] for user_data in sorted_users_data)
+            
+            response = f"⬤ 📈 ᴡᴇᴇᴋʟʏ ᴛᴏᴛᴀʟ ᴍᴇssᴀɢᴇs: {total_messages_count}\n\n"
+
+            for idx, (user_id, total_messages) in enumerate(sorted_users_data, start=1):
+                try:
+                    user_name = (await app.get_users(user_id)).first_name
+                except:
+                    user_name = "Unknown"
+                user_info = f"{idx}.   {user_name} ➥ {total_messages}\n"
+                response += user_info
+            
+            graph = generate_horizontal_bar_chart([(user_name, total_messages) for user_id, total_messages in sorted_users_data], "Weekly Leaderboard")
+            
+            if graph:
+                button = InlineKeyboardMarkup(
+                    [[    
+                       InlineKeyboardButton("ᴏᴠᴇʀᴀʟʟ", callback_data="overall"),
+                       InlineKeyboardButton("ᴡᴇᴇᴋʟʏ ✅", callback_data="weekly"),
+                    ],
+                    [
+                       InlineKeyboardButton("ᴛᴏᴅᴀʏ", callback_data="today"),
+                    ]]
+                )
+                await callback_query.message.edit_media(media=InputMediaPhoto(graph))
+                await callback_query.message.edit_text(response, reply_markup=button)
+            else:
+                await callback_query.message.reply_text("Error generating graph.")
+        else:
+            await callback_query.message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴡᴇᴇᴋ.")
+    else:
+        await callback_query.message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴡᴇᴇᴋ.")
+
+@app.on_callback_query(filters.regex(r"^today"))
+async def today_callback(client, callback_query):
+    await asyncio.sleep(1)  # Sleep for 1 second
+    chat_id = callback_query.message.chat.id
+    if chat_id in today:
+        users_data = [(user_id, user_data["total_messages"]) for user_id, user_data in today[chat_id].items()]
+        sorted_users_data = sorted(users_data, key=lambda x: x[1], reverse=True)[:10]
+
+        if sorted_users_data:
+            total_messages_count = sum(user_data['total_messages'] for user_data in today[chat_id].values())
+            
+            response = f"⬤ 📈 ᴛᴏᴅᴀʏ ᴛᴏᴛᴀʟ ᴍᴇssᴀɢᴇs: {total_messages_count}\n\n"
+
+            for idx, (user_id, total_messages) in enumerate(sorted_users_data, start=1):
+                try:
+                    user_name = (await app.get_users(user_id)).first_name
+                except:
+                    user_name = "Unknown"
+                user_info = f"{idx}.   {user_name} ➥ {total_messages}\n"
+                response += user_info
+            
+            graph = generate_horizontal_bar_chart([(user_name, total_messages) for user_id, total_messages in sorted_users_data], "Today's Leaderboard")
+            
+            if graph:
+                button = InlineKeyboardMarkup(
+                    [[    
+                       InlineKeyboardButton("ᴏᴠᴇʀᴀʟʟ", callback_data="overall"),
+                       InlineKeyboardButton("ᴡᴇᴇᴋʟʏ", callback_data="weekly"),
+                    ],
+                    [
+                       InlineKeyboardButton("ᴛᴏᴅᴀʏ ✅", callback_data="today"),
+                    ]]
+                )
+                await callback_query.message.edit_media(media=InputMediaPhoto(graph))
+                await callback_query.message.edit_text(response, reply_markup=button)
+            else:
+                await callback_query.message.reply_text("Error generating graph.")
+        else:
+            await callback_query.message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛᴏᴅᴀʏ.")
+    else:
+        await callback_query.message.reply_text("❅ ɴᴏ ᴅᴀᴛᴀ ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛᴏᴅᴀʏ.")
